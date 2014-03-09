@@ -132,6 +132,8 @@
     </ApplicationDefinition>
     <Compile Include="Events\BaseEvent.cs" />
     <Compile Include="Events\ClosingEvent.cs" />
+    <Compile Include="Events\DisplayMessageEvent.cs" />
+    <Compile Include="Events\MessageEventArgs.cs" />
     <Compile Include="Infrastructure\EventPublisher.cs" />
     <Compile Include="Infrastructure\IEventPublisher.cs" />
     <Compile Include="Service References\ShowManagement\Reference.cs">

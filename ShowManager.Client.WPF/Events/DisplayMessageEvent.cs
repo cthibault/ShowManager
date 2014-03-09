@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ShowManager.Client.WPF.Events
 {
-    public class ClosingEvent : BaseEvent<CancelEventArgs>
+    class DisplayMessageEvent : BaseEvent<MessageEventArgs>
     {
-        public ClosingEvent(CancelEventArgs args)
+        public DisplayMessageEvent(MessageEventArgs args)
             : base(args)
         {
         }
