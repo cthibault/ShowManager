@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Practices.Unity;
 using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
-using ShowManager.Client.WPF.ViewModels.Interfaces;
+using ShowManager.Client.WPF.ViewModels;
 
 namespace ShowManager.Client.WPF.ViewModels
 {

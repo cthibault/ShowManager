@@ -9,7 +9,6 @@ using Microsoft.Practices.Unity;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ViewModels;
 using ShowManager.Client.WPF.Views;
-using ShowManager.Client.WPF.Views.Interfaces;
 
 namespace ShowManager.Client.WPF
 {
@@ -26,6 +25,9 @@ namespace ShowManager.Client.WPF
 
             //Views
             unityContainer.RegisterType<IView, ShowsView>(ShowsViewModel.TitleText);
+
+            //ViewModels
+            unityContainer.RegisterType<IEditShowViewModel, EditShowViewModel>();
 
             App.UnityContainer = unityContainer;
 

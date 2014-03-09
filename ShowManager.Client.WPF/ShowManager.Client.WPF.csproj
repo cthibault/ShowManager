@@ -141,6 +141,7 @@
     </Compile>
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\EditShowViewModel.cs" />
+    <Compile Include="ViewModels\Interfaces\IEditShowViewModel.cs" />
     <Compile Include="ViewModels\Interfaces\ITabViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="ViewModels\ShowsViewModel.cs" />

@@ -10,8 +10,8 @@ using ReactiveUI;
 using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ShowManagement;
-using ShowManager.Client.WPF.ViewModels.Interfaces;
-using ShowManager.Client.WPF.Views.Interfaces;
+using ShowManager.Client.WPF.ViewModels;
+using ShowManager.Client.WPF.Views;
 
 
 namespace ShowManager.Client.WPF.ViewModels
@@ -77,7 +77,6 @@ namespace ShowManager.Client.WPF.ViewModels
             }
             catch (Exception)
             {
-                
                 throw;
             }
         }
@@ -114,19 +113,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #region LaunchEditView
         private void LaunchEditView(string header, Show show)
         {
-            if (this.EditShowViewModel != null)
-            {
-                if (this.EditShowViewModel.TryClose())
-                {
-                    this.EditShowViewModel = null;
-                }
-            }
-
-            if (this.EditShowViewModel == null)
-            {
-                this.EditShowViewModel = new EditShowViewModel(this.UnityContainer, this.EventPublisher, header, show);
-                this.EditShowViewModel.Open();
-            }
+            var opened = this.EditShowViewModel.TryOpen(header, show);
         }
         #endregion
 
@@ -149,12 +136,11 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region EditShowViewModel
-        public EditShowViewModel EditShowViewModel
+        public IEditShowViewModel EditShowViewModel
         {
-            get { return this._editShowViewModel; }
-            set { this.RaiseAndSetIfChanged(ref this._editShowViewModel, value); }
+            get { return this._editShowViewModel ?? (this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>()); }
         }
-        private EditShowViewModel _editShowViewModel;
+        private IEditShowViewModel _editShowViewModel;
         #endregion
 
         #region Context

@@ -13,14 +13,12 @@ using ShowManager.Client.WPF.ShowManagement;
 
 namespace ShowManager.Client.WPF.ViewModels
 {
-    class EditShowViewModel : BaseViewModel
+    class EditShowViewModel : BaseViewModel, IEditShowViewModel
     {
-        public EditShowViewModel(IUnityContainer unityContainer, IEventPublisher eventPublisher, string header, Show show)
+        public EditShowViewModel(IUnityContainer unityContainer, IEventPublisher eventPublisher)
             : base(unityContainer, eventPublisher)
         {
             this.Initialize();
-
-            this.LoadData(header, show);
         }
 
         #region Initialization
@@ -52,9 +50,46 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
+        #region Open
+        public bool TryOpen(string header, Show show)
+        {
+            // TODO: Check for unsaved changes and prompt the user
+            bool canOpen = this.HandleUnsavedChanges();
+
+            if (canOpen)
+            {
+                this.LoadData(header, show);
+
+                this.IsOpen = true;
+            }
+
+            return canOpen;
+        }
+        #endregion
+
+        #region Close
+        public ReactiveCommand<object> CloseCommand { get; private set; }
+
+        public bool TryClose()
+        {
+            // TODO: Check for unsaved changes and prompt the user
+            bool canClose = this.HandleUnsavedChanges();
+
+            if (canClose)
+            {
+                this.IsOpen = false;
+            }
+
+            return canClose;
+        }
+        #endregion
+
+
         #region LoadData
         private void LoadData(string header, Show show)
         {
+            this.FlushContext();
+
             this.Header = header;
 
             if (show != null && show.ShowKey > 0)
@@ -77,39 +112,9 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
-        #region Open / Close
-        public ReactiveCommand<object> CloseCommand { get; private set; }
-
-        public void Open()
-        {
-            this.IsOpen = true;
-        }
-
-        public bool TryClose()
-        {
-            // TODO: Check for unsaved changes and prompt the user
-            bool canClose = this.HandleUnsavedChanges();
-
-            if (canClose)
-            {
-                // TODO: Raise Closing event - allow listeners to refresh their data
-
-                this.IsOpen = false;
-            }
-
-            return !this.IsOpen;
-        }
-        #endregion
-
-        #region Unsaved Changes
-        private bool HandleUnsavedChanges()
-        {
-            return true;
-        }
-        #endregion
-
         #region Refresh
-        public ReactiveCommand<object> RefreshCommand { get; private set; } 
+        public ReactiveCommand<object> RefreshCommand { get; private set; }
+        public Action<Show> Refreshed { get; set; }
 
         private void OnRefresh()
         {
@@ -149,6 +154,8 @@ namespace ShowManager.Client.WPF.ViewModels
 
         #region Save
         public ReactiveCommand<object> SaveCommand { get; private set; }
+        public Action<Show> Saved { get; set; }
+
         private void OnSave()
         {
 
@@ -169,11 +176,28 @@ namespace ShowManager.Client.WPF.ViewModels
 
         #region Delete
         public ReactiveCommand<object> DeleteCommand { get; private set; }
+        public Action<Show> Deleted { get; set; }
+
         private void OnDelete()
         {
 
         }
         #endregion
+
+        #region HandleUnsavedChanges
+        private bool HandleUnsavedChanges()
+        {
+            return true;
+        }
+        #endregion
+
+        #region FlushContext
+        private void FlushContext()
+        {
+            this._context = null;
+        }
+        #endregion
+
 
         #region Show
         public Show Show

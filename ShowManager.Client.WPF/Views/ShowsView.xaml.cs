@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using ShowManager.Client.WPF.Views.Interfaces;
+using ShowManager.Client.WPF.Views;
 
 namespace ShowManager.Client.WPF.Views
 {
