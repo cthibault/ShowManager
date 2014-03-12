@@ -12,7 +12,7 @@ using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ShowManagement;
 using ShowManager.Client.WPF.ViewModels;
 using ShowManager.Client.WPF.Views;
-
+using ShowManager.Client.WPF.Extensions;
 
 namespace ShowManager.Client.WPF.ViewModels
 {
@@ -36,8 +36,8 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeCommands()
         {
-            this.RefreshCommand = ReactiveCommand.Create(Observable.Return(true), RxApp.MainThreadScheduler);
-            this.RefreshCommand.Subscribe(x => this.OnRefresh());
+            this.RefreshAllCommand = ReactiveCommand.Create(Observable.Return(true), RxApp.MainThreadScheduler);
+            this.RefreshAllCommand.Subscribe(x => this.OnRefreshAll());
 
             var showsCollectionIsAvailable = this.WhenAny(vm => vm.Shows, x => x.Value != null);
 
@@ -49,10 +49,9 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
-        #region Refresh
-        public ReactiveCommand<object> RefreshCommand { get; private set; }
-        
-        private void OnRefresh()
+        #region RefreshAll
+        public ReactiveCommand<object> RefreshAllCommand { get; private set; }        
+        private void OnRefreshAll()
         {
             try
             {
@@ -65,9 +64,34 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
-        #region Add 
-        public ReactiveCommand<object> AddCommand { get; private set; }
+        #region Refresh
+        public ReactiveCommand<object> RefreshCommand { get; private set; }
+        private void OnRefresh(Show show)
+        {
+            if (show != null)
+            {
+                // Detach current show from context and replace with new instance.
 
+                var currentShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
+                if (currentShow != null)
+                {
+                    var entityDescriptor = this.Context.GetEntityDescriptor(currentShow);
+                    if (entityDescriptor != null)
+                    {
+                        this.Context.Detach(currentShow);
+                    }
+                    
+                    this.Shows.Remove(currentShow);
+                }
+
+                this.Context.AttachTo(() => this.Context.Shows, show);
+                this.Shows.Add(show);
+            }
+        }
+        #endregion
+
+        #region Add
+        public ReactiveCommand<object> AddCommand { get; private set; }
         private void OnAdd()
         {
             try
@@ -84,7 +108,6 @@ namespace ShowManager.Client.WPF.ViewModels
 
         #region Edit
         public ReactiveCommand<object> EditCommand { get; private set; }
-
         private void OnEdit(Show show)
         {
             if (show != null)
@@ -96,7 +119,6 @@ namespace ShowManager.Client.WPF.ViewModels
 
         #region Clone
         public ReactiveCommand<object> CloneCommand { get; private set; }
-
         private void OnClone(Show show)
         {
         }
@@ -104,7 +126,6 @@ namespace ShowManager.Client.WPF.ViewModels
 
         #region Delete
         public ReactiveCommand<object> DeleteCommand { get; private set; }
-
         private void OnDelete(Show show)
         {
         }
@@ -138,7 +159,19 @@ namespace ShowManager.Client.WPF.ViewModels
         #region EditShowViewModel
         public IEditShowViewModel EditShowViewModel
         {
-            get { return this._editShowViewModel ?? (this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>()); }
+            get
+            {
+                if (this._editShowViewModel == null)
+                {
+                    this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>();
+
+                    this._editShowViewModel.Refreshed = show => this.OnRefresh(show);
+                    this._editShowViewModel.Saved = show => this.OnRefresh(show);
+                    this._editShowViewModel.Deleted = show => this.OnDelete(show);
+                }
+
+                return this._editShowViewModel;
+            }
         }
         private IEditShowViewModel _editShowViewModel;
         #endregion
@@ -150,14 +183,12 @@ namespace ShowManager.Client.WPF.ViewModels
             {
                 if (this._context == null)
                 {
-                    this._context = new ShowManagement.ShowManagementDBEntities(this._serviceUri);
-                    this._context.MergeOption = MergeOption.OverwriteChanges;
+                    this._context = ContextFactory.Create(MergeOption.OverwriteChanges);
                 }
                 return this._context;
             }
         }
         private ShowManagement.ShowManagementDBEntities _context;
-        private readonly Uri _serviceUri = new Uri("http://127.0.0.2:82/ShowManagementDataService.svc");
         #endregion
 
         #region ITabViewModel

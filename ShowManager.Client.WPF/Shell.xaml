@@ -5,7 +5,7 @@
                       Title="SHOW MANAGER" 
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       Height="400" Width="750">
-
+    
     <controls:MetroWindow.WindowCommands>
         <controls:WindowCommands>
             <Button Content="settings" />

@@ -141,6 +141,11 @@ namespace ShowManager.Client.WPF.ViewModels
                     .Where(s => s.ShowKey == showKey);
 
                 show = showsQuery.SingleOrDefault();
+
+                if (this.Refreshed != null)
+                {
+                    this.Refreshed(show);
+                }
             }
             catch (Exception ex)
             {
@@ -158,7 +163,12 @@ namespace ShowManager.Client.WPF.ViewModels
 
         private void OnSave()
         {
+            // TODO: Implement
 
+            if (this.Saved != null)
+            {
+                this.Saved(this.Show);
+            }
         }
         #endregion
 
@@ -180,7 +190,12 @@ namespace ShowManager.Client.WPF.ViewModels
 
         private void OnDelete()
         {
+            // TODO: Implement
 
+            if (this.Deleted != null)
+            {
+                this.Deleted(this.Show);
+            }
         }
         #endregion
 
@@ -233,14 +248,12 @@ namespace ShowManager.Client.WPF.ViewModels
             {
                 if (this._context == null)
                 {
-                    this._context = new ShowManagement.ShowManagementDBEntities(this._serviceUri);
-                    this._context.MergeOption = MergeOption.OverwriteChanges;
+                    this._context = ContextFactory.Create(MergeOption.OverwriteChanges);
                 }
                 return this._context;
             }
         }
         private ShowManagement.ShowManagementDBEntities _context;
-        private readonly Uri _serviceUri = new Uri("http://127.0.0.2:82/ShowManagementDataService.svc");
         #endregion
     }
 }
