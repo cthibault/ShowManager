@@ -11,6 +11,7 @@
     <iconUrl>http://go.microsoft.com/fwlink/?LinkId=261274</iconUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Reactive Extensions Main Library combining the interfaces, core, LINQ, and platform services libraries.</description>
+    <releaseNotes />
     <copyright>Copyright (C) Microsoft Corporation</copyright>
     <language>en-US</language>
     <tags>Rx Reactive Extensions Observable LINQ Events</tags>

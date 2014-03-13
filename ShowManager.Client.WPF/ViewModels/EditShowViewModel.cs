@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GalaSoft.MvvmLight.Command;
 using Microsoft.Practices.Unity;
-using ReactiveUI;
 using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ShowManagement;
@@ -33,20 +32,12 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeCommands()
         {
-            // Always disabled
-            this.CloseCommand = ReactiveCommand.Create(Observable.Return(false));
-
-            this.SaveCommand = ReactiveCommand.Create(Observable.Return(false));
-
-            this.RefreshCommand = ReactiveCommand.Create(this.WhenAny(vm => vm.Show, s => s.Value != null && s.Value.ShowKey > 0), RxApp.MainThreadScheduler);
-            this.RefreshCommand.Subscribe(x => this.OnRefresh());
-
-            this.CancelCommand = ReactiveCommand.Create(Observable.Return(true));
-            this.CancelCommand.Subscribe(x => this.OnCancel());
-
-            this.CloneCommand = ReactiveCommand.Create(Observable.Return(false));
-            this.DeleteCommand = ReactiveCommand.Create(Observable.Return(false));
-            
+            this.CloseCommand = new RelayCommand(() => { }, () => false);
+            this.SaveCommand = new RelayCommand(this.OnSave, () => this.Show != null);
+            this.RefreshCommand = new RelayCommand(this.OnRefresh, () => this.Show != null && this.Show.ShowKey > 0);
+            this.CancelCommand = new RelayCommand(this.OnCancel);
+            this.CloneCommand = new RelayCommand(this.OnClone, () => this.Show != null && this.Show.ShowKey > 0);
+            this.DeleteCommand = new RelayCommand(this.OnDelete, () => this.Show != null && this.Show.ShowKey > 0);            
         }
         #endregion
 
@@ -68,7 +59,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Close
-        public ReactiveCommand<object> CloseCommand { get; private set; }
+        public RelayCommand CloseCommand { get; private set; }
 
         public bool TryClose()
         {
@@ -113,7 +104,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Refresh
-        public ReactiveCommand<object> RefreshCommand { get; private set; }
+        public RelayCommand RefreshCommand { get; private set; }
         public Action<Show> Refreshed { get; set; }
 
         private void OnRefresh()
@@ -158,7 +149,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Save
-        public ReactiveCommand<object> SaveCommand { get; private set; }
+        public RelayCommand SaveCommand { get; private set; }
         public Action<Show> Saved { get; set; }
 
         private void OnSave()
@@ -173,7 +164,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Cancel
-        public ReactiveCommand<object> CancelCommand { get; private set; }
+        public RelayCommand CancelCommand { get; private set; }
         private void OnCancel()
         {
             this.IsOpen = false;
@@ -181,11 +172,15 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Clone
-        public ReactiveCommand<object> CloneCommand { get; private set; }
+        public RelayCommand CloneCommand { get; private set; }
+        private void OnClone()
+        {
+            // TODO: Implement
+        }
         #endregion
 
         #region Delete
-        public ReactiveCommand<object> DeleteCommand { get; private set; }
+        public RelayCommand DeleteCommand { get; private set; }
         public Action<Show> Deleted { get; set; }
 
         private void OnDelete()
@@ -218,7 +213,7 @@ namespace ShowManager.Client.WPF.ViewModels
         public Show Show
         {
             get { return this._show; }
-            set { this.RaiseAndSetIfChanged(ref this._show, value); }
+            set { this.Set(() => this.Show, ref this._show, value); }
         }
         private Show _show;
         #endregion
@@ -227,7 +222,7 @@ namespace ShowManager.Client.WPF.ViewModels
         public string Header
         {
             get { return this._header; }
-            set { this.RaiseAndSetIfChanged(ref this._header, value); }
+            set { this.Set(() => this.Header, ref this._header, value); }
         }
         private string _header;
         #endregion
@@ -236,7 +231,7 @@ namespace ShowManager.Client.WPF.ViewModels
         public bool IsOpen
         {
             get { return this._isOpen; }
-            set { this.RaiseAndSetIfChanged(ref this._isOpen, value); }
+            set { this.Set(() => this.IsOpen, ref this._isOpen, value); }
         }
         private bool _isOpen;
         #endregion

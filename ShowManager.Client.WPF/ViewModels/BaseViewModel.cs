@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GalaSoft.MvvmLight;
 using Microsoft.Practices.Unity;
-using ReactiveUI;
 using ShowManager.Client.WPF.Infrastructure;
 
 namespace ShowManager.Client.WPF.ViewModels
 {
-    class BaseViewModel : ReactiveObject
+    class BaseViewModel : ViewModelBase
     {
         protected BaseViewModel(IUnityContainer unityContainer, IEventPublisher eventPublisher)
         {
-
+            this.UnityContainer = unityContainer;
+            this.EventPublisher = eventPublisher;
         }
 
         protected IUnityContainer UnityContainer
@@ -28,6 +29,8 @@ namespace ShowManager.Client.WPF.ViewModels
             }
             set { this._unityContainer = value; }
         }
+        private IUnityContainer _unityContainer;
+
         protected IEventPublisher EventPublisher
         {
             get
@@ -40,8 +43,6 @@ namespace ShowManager.Client.WPF.ViewModels
             }
             set { this._eventPublisher = value; }
         }
-
-        private IUnityContainer _unityContainer;
         private IEventPublisher _eventPublisher;
     }
 }

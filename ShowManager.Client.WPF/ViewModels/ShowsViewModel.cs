@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Practices.Unity;
-using ReactiveUI;
 using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ShowManagement;
 using ShowManager.Client.WPF.ViewModels;
 using ShowManager.Client.WPF.Views;
 using ShowManager.Client.WPF.Extensions;
+using GalaSoft.MvvmLight.Command;
 
 namespace ShowManager.Client.WPF.ViewModels
 {
@@ -36,21 +35,17 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeCommands()
         {
-            this.RefreshAllCommand = ReactiveCommand.Create(Observable.Return(true), RxApp.MainThreadScheduler);
-            this.RefreshAllCommand.Subscribe(x => this.OnRefreshAll());
-
-            var showsCollectionIsAvailable = this.WhenAny(vm => vm.Shows, x => x.Value != null);
-
-            this.AddCommand = ReactiveCommand.Create(showsCollectionIsAvailable, RxApp.MainThreadScheduler);
-            this.AddCommand.Subscribe(x => this.OnAdd());
-
-            this.EditCommand = ReactiveCommand.Create(showsCollectionIsAvailable, RxApp.MainThreadScheduler);
-            this.EditCommand.Subscribe(show => this.OnEdit(show as Show));
+            this.RefreshAllCommand = new RelayCommand(this.OnRefreshAll);
+            this.RefreshCommand = new RelayCommand<Show>(this.OnRefresh);
+            this.AddCommand = new RelayCommand(this.OnAdd, () => this.Shows != null);
+            this.EditCommand = new RelayCommand<Show>(this.OnEdit);
+            this.CloneCommand = new RelayCommand<Show>(this.OnClone);
+            this.DeleteCommand = new RelayCommand<Show>(this.OnDelete);
         }
         #endregion
 
         #region RefreshAll
-        public ReactiveCommand<object> RefreshAllCommand { get; private set; }        
+        public RelayCommand RefreshAllCommand { get; private set; }
         private void OnRefreshAll()
         {
             try
@@ -65,33 +60,23 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Refresh
-        public ReactiveCommand<object> RefreshCommand { get; private set; }
+        public RelayCommand<Show> RefreshCommand { get; private set; }
         private void OnRefresh(Show show)
         {
             if (show != null)
             {
-                // Detach current show from context and replace with new instance.
-
+                // Update the Title
                 var currentShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
-                if (currentShow != null)
+                if (currentShow != null && currentShow.Title != show.Title)
                 {
-                    var entityDescriptor = this.Context.GetEntityDescriptor(currentShow);
-                    if (entityDescriptor != null)
-                    {
-                        this.Context.Detach(currentShow);
-                    }
-                    
-                    this.Shows.Remove(currentShow);
+                    currentShow.Title = show.Title;
                 }
-
-                this.Context.AttachTo(() => this.Context.Shows, show);
-                this.Shows.Add(show);
             }
         }
         #endregion
 
         #region Add
-        public ReactiveCommand<object> AddCommand { get; private set; }
+        public RelayCommand AddCommand { get; private set; }
         private void OnAdd()
         {
             try
@@ -107,7 +92,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Edit
-        public ReactiveCommand<object> EditCommand { get; private set; }
+        public RelayCommand<Show> EditCommand { get; private set; }
         private void OnEdit(Show show)
         {
             if (show != null)
@@ -118,14 +103,14 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Clone
-        public ReactiveCommand<object> CloneCommand { get; private set; }
+        public RelayCommand<Show> CloneCommand { get; private set; }
         private void OnClone(Show show)
         {
         }
         #endregion
 
         #region Delete
-        public ReactiveCommand<object> DeleteCommand { get; private set; }
+        public RelayCommand<Show> DeleteCommand { get; private set; }
         private void OnDelete(Show show)
         {
         }
@@ -142,7 +127,7 @@ namespace ShowManager.Client.WPF.ViewModels
         public DataServiceCollection<Show> Shows
         {
             get { return this._shows; }
-            set { this.RaiseAndSetIfChanged(ref this._shows, value); }
+            set { this.Set(() => this.Shows, ref this._shows, value); }
         }
         private DataServiceCollection<Show> _shows;
         #endregion
@@ -151,7 +136,7 @@ namespace ShowManager.Client.WPF.ViewModels
         public Show SelectedShow
         {
             get { return this._selectedShow; }
-            set { this.RaiseAndSetIfChanged(ref this._selectedShow, value); }
+            set { this.Set(() => this.SelectedShow, ref this._selectedShow, value); }
         }
         private Show _selectedShow;
         #endregion
