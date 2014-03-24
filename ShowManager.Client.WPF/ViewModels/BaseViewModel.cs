@@ -6,16 +6,28 @@ using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
 using Microsoft.Practices.Unity;
 using ShowManager.Client.WPF.Infrastructure;
+using ShowManager.Client.WPF.Messages;
 
 namespace ShowManager.Client.WPF.ViewModels
 {
     class BaseViewModel : ViewModelBase
     {
-        protected BaseViewModel(IUnityContainer unityContainer, IEventPublisher eventPublisher)
+        protected BaseViewModel(IUnityContainer unityContainer)
         {
             this.UnityContainer = unityContainer;
-            this.EventPublisher = eventPublisher;
         }
+
+        #region SendErrorMessage
+        protected void SendErrorMessage(string message, [CallerMemberName] string callingMethodName = null)
+        {
+            if (callingMethodName != null)
+            {
+                message = string.Format("'{0}' => {1}", callingMethodName, message);
+            }
+
+            this.MessengerInstance.Send<DisplayMessage>(new DisplayMessage(MessageType.Error, message));
+        }
+        #endregion
 
         protected IUnityContainer UnityContainer
         {
@@ -30,19 +42,5 @@ namespace ShowManager.Client.WPF.ViewModels
             set { this._unityContainer = value; }
         }
         private IUnityContainer _unityContainer;
-
-        protected IEventPublisher EventPublisher
-        {
-            get
-            {
-                if (this._eventPublisher == null)
-                {
-                    this._eventPublisher = this.UnityContainer.Resolve<IEventPublisher>();
-                }
-                return this._eventPublisher;
-            }
-            set { this._eventPublisher = value; }
-        }
-        private IEventPublisher _eventPublisher;
     }
 }

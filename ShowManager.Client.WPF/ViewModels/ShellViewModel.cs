@@ -4,17 +4,19 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using Microsoft.Practices.Unity;
-using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
+using ShowManager.Client.WPF.Messages;
 using ShowManager.Client.WPF.ViewModels;
 
 namespace ShowManager.Client.WPF.ViewModels
 {
     class ShellViewModel : BaseViewModel
     {
-        public ShellViewModel(IUnityContainer unityContainer, IEventPublisher eventPublisher)
-            : base(unityContainer, eventPublisher)
+        public ShellViewModel(IUnityContainer unityContainer)
+            : base(unityContainer)
         {
             this.Initialize();
         }
@@ -29,11 +31,14 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeEvents()
         {
-            this.EventPublisher.GetEvent<ClosingEvent>().Subscribe(e => { });
+            //this.EventPublisher.GetEvent<ClosingEvent>().Subscribe(e => { });
+            
+            this.MessengerInstance.Register<DisplayMessage>(this, x => this.DisplayMessageController.Add(x.Text));
+            this.MessengerInstance.Register<BusyMessage>(this, x => this.IsBusy = x.IsBusy);
         }
         private void InitializeCommands()
         {
-            
+            this.RemoveCurrentMessageCommand = new RelayCommand(() => this.DisplayMessageController.RemoveCurrent());
         }
         #endregion
 
@@ -60,5 +65,32 @@ namespace ShowManager.Client.WPF.ViewModels
         private ObservableCollection<ITabViewModel> _tabViewModels;
         #endregion
 
+        #region RemoveCurrentMessageCommand
+        public RelayCommand RemoveCurrentMessageCommand { get; private set; }
+        #endregion
+
+        #region DisplayMessageManager
+        public DisplayMessageController DisplayMessageController
+        {
+            get
+            {
+                if (this._displayMessageManager == null)
+                {
+                    this._displayMessageManager = new DisplayMessageController();
+                }
+                return this._displayMessageManager;
+            }
+        }
+        private DisplayMessageController _displayMessageManager;
+        #endregion
+
+        #region IsBusy
+        public bool IsBusy
+        {
+            get { return this._isBusy; }
+            set { this.Set(() => this.IsBusy, ref this._isBusy, value); }
+        }
+        private bool _isBusy;
+        #endregion
     }
 }

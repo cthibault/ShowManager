@@ -6,20 +6,45 @@
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       Height="400" Width="750">
     
+    <controls:MetroWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </controls:MetroWindow.Resources>
+    
     <controls:MetroWindow.WindowCommands>
         <controls:WindowCommands>
             <Button Content="settings" />
         </controls:WindowCommands>
     </controls:MetroWindow.WindowCommands>
 
-    <controls:MetroContentControl>
-        <controls:MetroAnimatedSingleRowTabControl ItemsSource="{Binding TabViewModels}">
-            <controls:MetroAnimatedSingleRowTabControl.Resources>
-                <Style TargetType="controls:MetroTabItem">
-                    <Setter Property="Header" Value="{Binding Title}" />
-                    <Setter Property="Content" Value="{Binding View}" />
-                </Style>
-            </controls:MetroAnimatedSingleRowTabControl.Resources>
-        </controls:MetroAnimatedSingleRowTabControl>
-    </controls:MetroContentControl>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <controls:MetroProgressBar Grid.Row="0"
+                                   IsIndeterminate="true" 
+                                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   Foreground="{DynamicResource AccentColorBrush}" />
+        
+        <controls:MetroContentControl Grid.Row="1">
+            <controls:MetroAnimatedSingleRowTabControl ItemsSource="{Binding TabViewModels}">
+                <controls:MetroAnimatedSingleRowTabControl.Resources>
+                    <Style TargetType="controls:MetroTabItem">
+                        <Setter Property="Header" Value="{Binding Title}" />
+                        <Setter Property="Content" Value="{Binding View}" />
+                    </Style>
+                </controls:MetroAnimatedSingleRowTabControl.Resources>
+            </controls:MetroAnimatedSingleRowTabControl>
+        </controls:MetroContentControl>
+
+        <TextBox Grid.Row="2" 
+                 controls:TextboxHelper.ClearTextButton="True"
+                 controls:TextboxHelper.ButtonCommand="{Binding RemoveCurrentMessageCommand, Mode=OneWay}"
+                 Text="{Binding DisplayMessageController.CurrentMessage, Mode=OneWay}"
+                 Visibility="{Binding DisplayMessageController.HasCurrentMessage, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
+                 IsReadOnly="True"
+                 HorizontalAlignment="Stretch" />
+    </Grid>
 </controls:MetroWindow>

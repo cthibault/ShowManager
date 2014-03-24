@@ -5,20 +5,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Practices.Unity;
-using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ShowManagement;
 using ShowManager.Client.WPF.ViewModels;
 using ShowManager.Client.WPF.Views;
 using ShowManager.Client.WPF.Extensions;
 using GalaSoft.MvvmLight.Command;
+using System.Windows.Threading;
+using GalaSoft.MvvmLight.Messaging;
+using ShowManager.Client.WPF.Messages;
+using System.Runtime.CompilerServices;
+
 
 namespace ShowManager.Client.WPF.ViewModels
 {
     class ShowsViewModel : BaseViewModel, ITabViewModel
     {
-        public ShowsViewModel(IUnityContainer unityContainer, IEventPublisher eventPublisher)
-            : base(unityContainer, eventPublisher)
+        public ShowsViewModel(IUnityContainer unityContainer)
+            : base(unityContainer)
         {
             this.Initialize();
         }
@@ -29,98 +33,158 @@ namespace ShowManager.Client.WPF.ViewModels
             this.InitializeEvents();
             this.InitializeCommands();
         } 
+
         private void InitializeEvents()
         {
-            this.EventPublisher.GetEvent<ClosingEvent>().Subscribe(e => { });
         }
+        
         private void InitializeCommands()
         {
             this.RefreshAllCommand = new RelayCommand(this.OnRefreshAll);
-            this.RefreshCommand = new RelayCommand<Show>(this.OnRefresh);
-            this.AddCommand = new RelayCommand(this.OnAdd, () => this.Shows != null);
+            //this.RefreshCommand = new RelayCommand<Show>(this.OnRefresh);
+            //this.AddCommand = new RelayCommand(this.OnAdd, () => this.Shows != null);
             this.EditCommand = new RelayCommand<Show>(this.OnEdit);
-            this.CloneCommand = new RelayCommand<Show>(this.OnClone);
-            this.DeleteCommand = new RelayCommand<Show>(this.OnDelete);
+            //this.CloneCommand = new RelayCommand<Show>(this.OnClone);
+            //this.DeleteCommand = new RelayCommand<Show>(this.OnDelete);
         }
         #endregion
 
         #region RefreshAll
+        private DataServiceQueryContinuation<Show> _showContinuationToken;
         public RelayCommand RefreshAllCommand { get; private set; }
+        
         private void OnRefreshAll()
         {
+            BusyController.Default.SendMessage(true);
+
+            this._showContinuationToken = null;
+
+            var query = this.Context.Shows as DataServiceQuery<Show>;
+
             try
             {
-                this.Shows = new DataServiceCollection<Show>(this.Context.Shows);
+                query.BeginExecute(this.OnRefreshAllComplete, query);
             }
             catch (Exception ex)
             {
-
+                this.SendErrorMessage(ex.Message);
             }
         }
-        #endregion
 
-        #region Refresh
-        public RelayCommand<Show> RefreshCommand { get; private set; }
-        private void OnRefresh(Show show)
+        private void OnRefreshAllComplete(IAsyncResult result)
         {
-            if (show != null)
-            {
-                // Update the Title
-                var currentShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
-                if (currentShow != null && currentShow.Title != show.Title)
+            Dispatcher.CurrentDispatcher.Invoke(() =>
                 {
-                    currentShow.Title = show.Title;
-                }
-            }
-        }
-        #endregion
+                    try
+                    {
+                        IEnumerable<Show> responseResults = null;
 
-        #region Add
-        public RelayCommand AddCommand { get; private set; }
-        private void OnAdd()
-        {
-            try
-            {
-                var show = new Show();
-                this.LaunchEditView("add", show);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+                        if (this._showContinuationToken == null)
+                        {
+                            // Since this is the first page, we get back the query
+                            var query = result.AsyncState as DataServiceQuery<Show>;
+
+                            // Get the response of the query
+                            responseResults = query.EndExecute(result);
+                        }
+                        else
+                        {
+                            // This is not the first page, so we get back the context
+                            //svcContext = result.AsyncState as NorthwindEntities;
+                            //response = svcContext.EndExecute<Order>(result);
+                        }
+
+                        this.Shows = new DataServiceCollection<Show>(responseResults);
+                    }
+                    catch (DataServiceQueryException ex)
+                    {
+                        this.SendErrorMessage(ex.Message);
+                    }
+                    finally
+                    {
+                        BusyController.Default.SendMessage(false);
+                    }
+                }, DispatcherPriority.Input);
         }
         #endregion
 
         #region Edit
         public RelayCommand<Show> EditCommand { get; private set; }
+
         private void OnEdit(Show show)
         {
             if (show != null)
             {
-                this.LaunchEditView("edit", show);
+                this.EditShowViewModel.Reset()
+
+                Action<Show> editAction = (s) => 
+                {
+                    if (s != null)
+                    {
+                        this.EditShowViewModel.Populate("edit", s);
+                    }
+                };
+
+                this.GetShowDetails(show.ShowKey, editAction);
+            }
+        }        
+        #endregion
+
+
+        #region GetShowDetails
+        private void GetShowDetails(int showKey, Action<Show> callbackAction)
+        {
+            BusyController.Default.SendMessage(true);
+
+            var query = this.Context.Shows
+                .Expand(s => s.ShowParsers)
+                .Where(s => s.ShowKey == showKey) as DataServiceQuery<Show>;
+
+            try
+            {
+                query.BeginExecute(ar => this.GetShowDetailsCompleted(ar, callbackAction), query);
+            }
+            catch (Exception ex)
+            {
+                this.SendErrorMessage(ex.Message);
             }
         }
-        #endregion
-
-        #region Clone
-        public RelayCommand<Show> CloneCommand { get; private set; }
-        private void OnClone(Show show)
+        private void GetShowDetailsCompleted(IAsyncResult result, Action<Show> callbackAction)
         {
-        }
-        #endregion
+            Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        var query = result.AsyncState as DataServiceQuery<Show>;
 
-        #region Delete
-        public RelayCommand<Show> DeleteCommand { get; private set; }
-        private void OnDelete(Show show)
-        {
-        }
-        #endregion
+                        var responseResults = query.EndExecute(result);
 
-        #region LaunchEditView
-        private void LaunchEditView(string header, Show show)
-        {
-            var opened = this.EditShowViewModel.TryOpen(header, show);
-        }
+                        var show = responseResults.SingleOrDefault();
+                        if (show != null)
+                        {
+                            var existingShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
+                            if (existingShow != null)
+                            {
+                                existingShow = show;
+                            }
+                            else
+                            {
+                                this.Shows.Add(show);
+                            }
+
+                            callbackAction(show);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.SendErrorMessage(ex.Message);
+                    }
+                    finally
+                    {
+                        BusyController.Default.SendMessage(false);
+                    }
+                }, DispatcherPriority.Input);
+        } 
         #endregion
 
         #region Shows
@@ -150,9 +214,9 @@ namespace ShowManager.Client.WPF.ViewModels
                 {
                     this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>();
 
-                    this._editShowViewModel.Refreshed = show => this.OnRefresh(show);
-                    this._editShowViewModel.Saved = show => this.OnRefresh(show);
-                    this._editShowViewModel.Deleted = show => this.OnDelete(show);
+                    //this._editShowViewModel.Refreshed = show => this.OnRefresh(show);
+                    //this._editShowViewModel.Saved = show => this.OnRefresh(show);
+                    //this._editShowViewModel.Deleted = show => this.OnDelete(show);
                 }
 
                 return this._editShowViewModel;

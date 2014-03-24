@@ -15,7 +15,6 @@ using System.Windows.Shapes;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Practices.Unity;
-using ShowManager.Client.WPF.Events;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.ViewModels;
 
@@ -42,31 +41,29 @@ namespace ShowManager.Client.WPF
         }
         private void InitializeEvents()
         {
-            var eventPublisher = App.UnityContainer.Resolve<IEventPublisher>();
-
-            eventPublisher.GetEvent<DisplayMessageEvent>().Subscribe(evt => this.DisplayMessage(evt.Args));
+            //eventPublisher.GetEvent<DisplayMessageEvent>().Subscribe(evt => this.DisplayMessage(evt.Args));
         }
 
         #region DisplayMessage
-        private async void DisplayMessage(MessageEventArgs args)
-        {
-            if (args != null)
-            {
-                var settings = new MetroDialogSettings
-                {
-                    AffirmativeButtonText = args.AffirmativeButtonText,
-                    NegativeButtonText = args.NegativeButtonText
-                };
+        //private async void DisplayMessage(MessageEventArgs args)
+        //{
+        //    if (args != null)
+        //    {
+        //        var settings = new MetroDialogSettings
+        //        {
+        //            AffirmativeButtonText = args.AffirmativeButtonText,
+        //            NegativeButtonText = args.NegativeButtonText
+        //        };
 
-                MessageDialogStyle style = MessageDialogStyle.Affirmative;
-                if (!string.IsNullOrWhiteSpace(settings.NegativeButtonText))
-                {
-                    style = MessageDialogStyle.AffirmativeAndNegative;
-                }
+        //        MessageDialogStyle style = MessageDialogStyle.Affirmative;
+        //        if (!string.IsNullOrWhiteSpace(settings.NegativeButtonText))
+        //        {
+        //            style = MessageDialogStyle.AffirmativeAndNegative;
+        //        }
 
-                MessageDialogResult result = await this.ShowMessageAsync(args.Title, args.Message, style, settings);
-            }
-        }
+        //        MessageDialogResult result = await this.ShowMessageAsync(args.Title, args.Message, style, settings);
+        //    }
+        //}
         #endregion
 
 

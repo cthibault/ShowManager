@@ -21,7 +21,7 @@ namespace ShowManager.Client.WPF
         {
             var unityContainer = new UnityContainer();
 
-            unityContainer.RegisterType<IEventPublisher, EventPublisher>(new ContainerControlledLifetimeManager());
+            //unityContainer.RegisterType<IEventPublisher, EventPublisher>(new ContainerControlledLifetimeManager());
 
             //Views
             unityContainer.RegisterType<IView, ShowsView>(ShowsViewModel.TitleText);

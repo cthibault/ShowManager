@@ -104,6 +104,7 @@
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.4.2.30.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Presentation" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -126,14 +127,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Events\BaseEvent.cs" />
-    <Compile Include="Events\ClosingEvent.cs" />
-    <Compile Include="Events\DisplayMessageEvent.cs" />
-    <Compile Include="Events\MessageEventArgs.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\DataServiceContextExtensions.cs" />
+    <Compile Include="Infrastructure\BusyController.cs" />
     <Compile Include="Infrastructure\ContextFactory.cs" />
-    <Compile Include="Infrastructure\EventPublisher.cs" />
-    <Compile Include="Infrastructure\IEventPublisher.cs" />
+    <Compile Include="Infrastructure\DisplayMessageController.cs" />
+    <Compile Include="Messages\BusyMessage.cs" />
+    <Compile Include="Messages\DisplayMessage.cs" />
     <Compile Include="Service References\ShowManagement\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

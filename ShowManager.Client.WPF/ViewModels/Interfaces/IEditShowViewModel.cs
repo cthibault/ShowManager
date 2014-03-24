@@ -5,11 +5,11 @@ namespace ShowManager.Client.WPF.ViewModels
 {
     interface IEditShowViewModel
     {
-        bool TryOpen(string header, Show show);
-        bool TryClose();
+        void Populate(string header, Show show);
+        void Reset();
 
-        Action<Show> Saved { get; set; }
-        Action<Show> Refreshed { get; set; }
-        Action<Show> Deleted { get; set; }
+        //Action<Show> Saved { get; set; }
+        //Action<Show> Refreshed { get; set; }
+        //Action<Show> Deleted { get; set; }
     }
 }
