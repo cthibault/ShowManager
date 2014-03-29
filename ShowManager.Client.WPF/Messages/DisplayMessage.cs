@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
+using ShowManager.Client.WPF.Enums;
 
 namespace ShowManager.Client.WPF.Messages
 {
@@ -14,31 +15,41 @@ namespace ShowManager.Client.WPF.Messages
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayMessage"/> class.
+        /// Default Type is MessageType.Information
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="title"></param>
         /// <param name="text"></param>
-        public DisplayMessage(MessageType type, string text)
+        public DisplayMessage(string title, string text)
+            : this(title, text, MessageType.Information)
         {
-            this.Type = type;
-            this.Text = text;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DisplayMessage"/> class.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="text"></param>
+        /// <param name="type"></param>
+        public DisplayMessage(string title, string text, MessageType type)
+        {
+            this.Title = title;
+            this.Text = text;
+            this.Type = type;
+        }
+
+        /// <summary>
+        /// The Title text to display
+        /// </summary>
+        public string Title { get; protected set; }
 
         /// <summary>
         /// Gets the Text value
         /// </summary>
-        public string Text { get; private set; }
+        public string Text { get; protected set; }
 
         /// <summary>
         /// Gets the MessageType value
         /// </summary>
-        public MessageType Type { get; private set; }
-    }
-
-    enum MessageType
-    {
-        Information,
-        Warning,
-        Error,
-        Debug
+        public MessageType Type { get; protected set; }
     }
 }

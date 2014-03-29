@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Practices.Unity;
 using ShowManager.Client.WPF.Infrastructure;
+using ShowManager.Client.WPF.Models;
 using ShowManager.Client.WPF.ShowManagement;
 
 namespace ShowManager.Client.WPF.ViewModels
@@ -31,7 +32,6 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeCommands()
         {
-            //this.CloseCommand = new RelayCommand(() => { }, () => false);
             this.SaveCommand = new RelayCommand(this.OnSave, () => this.Show != null);
             this.RefreshCommand = new RelayCommand(this.OnRefresh, () => this.Show != null && this.Show.ShowKey > 0);
             this.CancelCommand = new RelayCommand(this.OnCancel);
@@ -67,9 +67,14 @@ namespace ShowManager.Client.WPF.ViewModels
 
         #region Cancel
         public RelayCommand CancelCommand { get; private set; }
-        private void OnCancel()
+        private async void OnCancel()
         {
-            this.IsOpen = false;
+            var clear = await this.ClearAsyc();
+
+            if (clear)
+            {
+                this.IsOpen = false;
+            }
         }
         #endregion
 
@@ -97,6 +102,7 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
 
+        #region Populate
         public void Populate(string header, Show show)
         {
             this.Header = header;
@@ -104,29 +110,46 @@ namespace ShowManager.Client.WPF.ViewModels
             this.Show = show;
 
             this.IsOpen = true;
-        }
+        } 
+        #endregion
 
-        public void Reset()
+        #region Clear
+        public Task<bool> ClearAsyc()
         {
-            bool reset = true;
+            var tcs = new TaskCompletionSource<bool>();
 
             if (this.HasUnsavedChanges)
             {
-                // Prompt the user about the changes they are about to lose
-                reset = true;
-            }
+                Action accept = () => 
+                    {
+                        this.Show = null;
+                        this.PromptModel = null;
+                        tcs.TrySetResult(true);
+                    };
 
-            if (reset)
+                Action reject = () => 
+                    {
+                        this.PromptModel = null;
+                        tcs.TrySetResult(false);
+                    };
+
+                this.PromptModel = new PromptModel("Discard Changes?", accept, reject);
+            }
+            else
             {
                 this.Show = null;
+                tcs.TrySetResult(true);
             }
-        }
+
+            return tcs.Task;
+        } 
+        #endregion
 
         public bool HasUnsavedChanges
         {
             get
             {
-                return true;
+                return this.IsOpen && this.Show != null;
             }
         }
 
@@ -156,6 +179,15 @@ namespace ShowManager.Client.WPF.ViewModels
             private set { this.Set(() => this.IsOpen, ref this._isOpen, value); }
         }
         private bool _isOpen;
+        #endregion
+
+        #region PromptModel
+        public IPromptModel PromptModel
+        {
+            get { return this._promptModel; }
+            set { this.Set(() => this.PromptModel, ref this._promptModel, value); }
+        }
+        private IPromptModel _promptModel;
         #endregion
     }
 }

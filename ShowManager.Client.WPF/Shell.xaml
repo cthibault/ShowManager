@@ -29,7 +29,7 @@
                                    Foreground="{DynamicResource AccentColorBrush}" />
         
         <controls:MetroContentControl Grid.Row="1">
-            <controls:MetroAnimatedSingleRowTabControl ItemsSource="{Binding TabViewModels}">
+            <controls:MetroAnimatedSingleRowTabControl ItemsSource="{Binding TabViewModels}" SelectedItem="{Binding SelectedTabViewModel}">
                 <controls:MetroAnimatedSingleRowTabControl.Resources>
                     <Style TargetType="controls:MetroTabItem">
                         <Setter Property="Header" Value="{Binding Title}" />

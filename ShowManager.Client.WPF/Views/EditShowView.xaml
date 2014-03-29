@@ -92,5 +92,35 @@
                 </Rectangle>
             </Button>
         </StackPanel>
+
+        <!--Prompt Flyout-->
+        <controls:FlyoutsControl Grid.Row="0" Grid.RowSpan="2">
+            <controls:Flyout DataContext="{Binding PromptModel}"
+                             Header="{Binding Header}" 
+                             IsOpen="{Binding IsOpen}"
+                             CloseCommand="{Binding RejectCommand}"
+                             Theme="Inverse"
+                             Position="Bottom">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Width="50" Height="50" ToolTip="yes" Style="{DynamicResource MetroCircleButtonStyle}"
+                    Command="{Binding ConfirmCommand}">
+                        <Rectangle Width="20" Height="20">
+                            <Rectangle.Fill>
+                                <VisualBrush Stretch="Fill" Visual="{DynamicResource appbar_check}" />
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Button>
+
+                    <Button Width="50" Height="50" ToolTip="no" Style="{DynamicResource MetroCircleButtonStyle}"
+                    Command="{Binding RejectCommand}">
+                        <Rectangle Width="20" Height="20">
+                            <Rectangle.Fill>
+                                <VisualBrush Stretch="Fill" Visual="{DynamicResource appbar_close}" />
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Button>
+                </StackPanel>
+            </controls:Flyout>
+        </controls:FlyoutsControl>
     </Grid>
 </UserControl>

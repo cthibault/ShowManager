@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
 using Microsoft.Practices.Unity;
+using ShowManager.Client.WPF.Enums;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.Messages;
 
@@ -25,7 +27,7 @@ namespace ShowManager.Client.WPF.ViewModels
                 message = string.Format("'{0}' => {1}", callingMethodName, message);
             }
 
-            this.MessengerInstance.Send<DisplayMessage>(new DisplayMessage(MessageType.Error, message));
+            this.MessengerInstance.Send<DisplayStatusMessage>(new DisplayStatusMessage(message, MessageType.Information));
         }
         #endregion
 

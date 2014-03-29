@@ -53,6 +53,10 @@ namespace ShowManager.Client.WPF.ViewModels
         private DataServiceQueryContinuation<Show> _showContinuationToken;
         public RelayCommand RefreshAllCommand { get; private set; }
         
+        public void RefreshAll()
+        {
+            this.OnRefreshAll();
+        }
         private void OnRefreshAll()
         {
             BusyController.Default.SendMessage(true);
@@ -111,12 +115,10 @@ namespace ShowManager.Client.WPF.ViewModels
         #region Edit
         public RelayCommand<Show> EditCommand { get; private set; }
 
-        private void OnEdit(Show show)
+        private async void OnEdit(Show show)
         {
             if (show != null)
             {
-                this.EditShowViewModel.Reset()
-
                 Action<Show> editAction = (s) => 
                 {
                     if (s != null)
@@ -125,7 +127,11 @@ namespace ShowManager.Client.WPF.ViewModels
                     }
                 };
 
-                this.GetShowDetails(show.ShowKey, editAction);
+                var clear = await this.EditShowViewModel.ClearAsyc();
+                if (clear)
+                {
+                    this.GetShowDetails(show.ShowKey, editAction);
+                }
             }
         }        
         #endregion

@@ -33,7 +33,7 @@ namespace ShowManager.Client.WPF.ViewModels
         {
             //this.EventPublisher.GetEvent<ClosingEvent>().Subscribe(e => { });
             
-            this.MessengerInstance.Register<DisplayMessage>(this, x => this.DisplayMessageController.Add(x.Text));
+            this.MessengerInstance.Register<DisplayStatusMessage>(this, x => this.DisplayMessageController.Add(x.Text));
             this.MessengerInstance.Register<BusyMessage>(this, x => this.IsBusy = x.IsBusy);
         }
         private void InitializeCommands()
@@ -47,6 +47,9 @@ namespace ShowManager.Client.WPF.ViewModels
         {
             var showsViewModel = this.UnityContainer.Resolve<ShowsViewModel>();
             this.TabViewModels.Add(showsViewModel);
+
+            this.SelectedTabViewModel = showsViewModel;
+            showsViewModel.RefreshAll();
         }
         #endregion
 
@@ -63,6 +66,15 @@ namespace ShowManager.Client.WPF.ViewModels
             }
         }
         private ObservableCollection<ITabViewModel> _tabViewModels;
+        #endregion
+
+        #region SelectedTabViewModel
+        public ITabViewModel SelectedTabViewModel
+        {
+            get { return this._selectedTabViewModels; }
+            set { this.Set(() => this.SelectedTabViewModel, ref this._selectedTabViewModels, value); }
+        }
+        private ITabViewModel _selectedTabViewModels;
         #endregion
 
         #region RemoveCurrentMessageCommand

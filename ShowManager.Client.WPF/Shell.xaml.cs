@@ -16,6 +16,7 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Practices.Unity;
 using ShowManager.Client.WPF.Infrastructure;
+using ShowManager.Client.WPF.Messages;
 using ShowManager.Client.WPF.ViewModels;
 
 namespace ShowManager.Client.WPF
@@ -39,30 +40,48 @@ namespace ShowManager.Client.WPF
         {
             this.InitializeEvents();
         }
-        private void InitializeEvents()
+        private async void InitializeEvents()
         {
-            //eventPublisher.GetEvent<DisplayMessageEvent>().Subscribe(evt => this.DisplayMessage(evt.Args));
+            
         }
 
-        #region DisplayMessage
-        //private async void DisplayMessage(MessageEventArgs args)
+        #region DisplayStatusMessage
+        private async void DisplayMessage(DisplayMessage displayMessage)
+        {
+            //if (args != null)
+            //{
+            //    var settings = new MetroDialogSettings
+            //    {
+            //        AffirmativeButtonText = args.AffirmativeButtonText,
+            //        NegativeButtonText = args.NegativeButtonText
+            //    };
+
+            //    MessageDialogStyle style = MessageDialogStyle.Affirmative;
+            //    if (!string.IsNullOrWhiteSpace(settings.NegativeButtonText))
+            //    {
+            //        style = MessageDialogStyle.AffirmativeAndNegative;
+            //    }
+
+            //    MessageDialogResult result = await this.ShowMessageAsync(args.Title, args.Message, style, settings);
+            //}
+            
+        }
+        #endregion
+
+        #region DisplayInputMessage
+        //private async Task<string> OnDisplayPromptMessage(PromptMessage promptMessage)
         //{
-        //    if (args != null)
+            
+
+        //    if (promptMessage != null)
         //    {
         //        var settings = new MetroDialogSettings
         //        {
-        //            AffirmativeButtonText = args.AffirmativeButtonText,
-        //            NegativeButtonText = args.NegativeButtonText
+        //            AffirmativeButtonText = "Ok",
+        //            NegativeButtonText = "Cancel"
         //        };
 
-        //        MessageDialogStyle style = MessageDialogStyle.Affirmative;
-        //        if (!string.IsNullOrWhiteSpace(settings.NegativeButtonText))
-        //        {
-        //            style = MessageDialogStyle.AffirmativeAndNegative;
-        //        }
-
-        //        MessageDialogResult result = await this.ShowMessageAsync(args.Title, args.Message, style, settings);
-        //    }
+        //        MessageDialogStyle style = MessageDialogStyle.AffirmativeAndNegative;
         //}
         #endregion
 
@@ -70,5 +89,13 @@ namespace ShowManager.Client.WPF
         #region ViewModel
         ShellViewModel ViewModel { get; set; } 
         #endregion
+    }
+
+    static class MetroDialogSettingsFactory
+    {
+        public static MetroDialogSettings Create()
+        {
+            return null;
+        }
     }
 }
