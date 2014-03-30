@@ -39,7 +39,7 @@
             </controls:MetroAnimatedSingleRowTabControl>
         </controls:MetroContentControl>
 
-        <TextBox Grid.Row="2" 
+        <TextBox Grid.Row="2" Height="20"
                  controls:TextboxHelper.ClearTextButton="True"
                  controls:TextboxHelper.ButtonCommand="{Binding RemoveCurrentMessageCommand, Mode=OneWay}"
                  Text="{Binding DisplayMessageController.CurrentMessage, Mode=OneWay}"

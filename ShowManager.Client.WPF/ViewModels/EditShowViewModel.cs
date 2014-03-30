@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Practices.Unity;
+using ShowManager.Client.WPF.Entities;
 using ShowManager.Client.WPF.Infrastructure;
 using ShowManager.Client.WPF.Models;
 using ShowManager.Client.WPF.ShowManagement;
@@ -32,35 +33,41 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeCommands()
         {
-            this.SaveCommand = new RelayCommand(this.OnSave, () => this.Show != null);
-            this.RefreshCommand = new RelayCommand(this.OnRefresh, () => this.Show != null && this.Show.ShowKey > 0);
             this.CancelCommand = new RelayCommand(this.OnCancel);
-            //this.CloneCommand = new RelayCommand(this.OnClone, () => this.Show != null && this.Show.ShowKey > 0);
-            //this.DeleteCommand = new RelayCommand(this.OnDelete, () => this.Show != null && this.Show.ShowKey > 0);            
+            this.SaveCommand = new RelayCommand(this.OnSave, () => this.HasUnsavedChanges);
+            this.RefreshCommand = new RelayCommand(this.OnRefresh, () => this.Show != null && this.Show.ShowKey > 0);
+            this.DeleteCommand = new RelayCommand(this.OnDelete, () => this.Show != null && this.Show.ShowKey > 0);
+        }
+        #endregion
+
+
+        #region Actions
+        public Action<Show> Save { get; set; }
+        public Action<Show> Refresh { get; set; }
+        public Action<Show> Cancel { get; set; }
+        public Action<Show> Delete { get; set; }
+        #endregion
+
+
+
+        #region Save
+        public RelayCommand SaveCommand { get; private set; }
+        private void OnSave()
+        {
+            if (this.Save != null)
+            {
+                this.Save(this.Show);
+            }
         }
         #endregion
 
         #region Refresh
         public RelayCommand RefreshCommand { get; private set; }
-        public Action<Show> Refreshed { get; set; }
-
         private void OnRefresh()
         {
-            
-        }
-        #endregion
-
-        #region Save
-        public RelayCommand SaveCommand { get; private set; }
-        public Action<Show> Saved { get; set; }
-
-        private void OnSave()
-        {
-            // TODO: Implement
-
-            if (this.Saved != null)
+            if (this.Refresh != null)
             {
-                this.Saved(this.Show);
+                this.Refresh(this.Show);
             }
         }
         #endregion
@@ -69,34 +76,20 @@ namespace ShowManager.Client.WPF.ViewModels
         public RelayCommand CancelCommand { get; private set; }
         private async void OnCancel()
         {
-            var clear = await this.ClearAsyc();
-
-            if (clear)
+            if (this.Cancel != null)
             {
-                this.IsOpen = false;
+                this.Cancel(this.Show);
             }
-        }
-        #endregion
-
-        #region Clone
-        public RelayCommand CloneCommand { get; private set; }
-        private void OnClone()
-        {
-            // TODO: Implement
         }
         #endregion
 
         #region Delete
         public RelayCommand DeleteCommand { get; private set; }
-        public Action<Show> Deleted { get; set; }
-
-        private void OnDelete()
+        private async void OnDelete()
         {
-            // TODO: Implement
-
-            if (this.Deleted != null)
+            if (this.Delete != null)
             {
-                this.Deleted(this.Show);
+                this.Delete(this.Show);
             }
         }
         #endregion
@@ -109,12 +102,20 @@ namespace ShowManager.Client.WPF.ViewModels
 
             this.Show = show;
 
+            if (this.ChangeTracker != null)
+            {
+                this.ChangeTracker.Dispose();
+                this.ChangeTracker = null;
+            }
+
+            this.ChangeTracker = new ChangeTracker(this.Show, true);
+
             this.IsOpen = true;
         } 
         #endregion
 
         #region Clear
-        public Task<bool> ClearAsyc()
+        public Task<bool> TryClearAsyc()
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -122,8 +123,7 @@ namespace ShowManager.Client.WPF.ViewModels
             {
                 Action accept = () => 
                     {
-                        this.Show = null;
-                        this.PromptModel = null;
+                        this.Clear();
                         tcs.TrySetResult(true);
                     };
 
@@ -143,15 +143,63 @@ namespace ShowManager.Client.WPF.ViewModels
 
             return tcs.Task;
         } 
+        
+        private void Clear()
+        {
+            this.ChangeTracker.Dispose();
+            this.ChangeTracker = null;
+            this.Show = null;
+            this.PromptModel = null;
+        }
         #endregion
 
+        #region Close
+        //TODO: Temp fix until the VisualTemplate is updated so that the close button is not visible
+        //  -Always disabled
+        public RelayCommand CloseCommand 
+        {
+            get 
+            {
+                if (this._closeCommand == null)
+                {
+                    this._closeCommand = new RelayCommand(() => { /* Do Nothing */ }, () => false);
+                }
+                return this._closeCommand;
+            }
+        }
+        private RelayCommand _closeCommand;
+
+        public async Task<bool> TryClearAndCloseAsync()
+        {
+            bool clear = await this.TryClearAsyc();
+            if (clear)
+            {
+                this.IsOpen = false;
+            }
+
+            return clear;
+        }
+
+        public async Task CloseAndDiscardChangesAsync()
+        {
+            this.Clear();
+            this.IsOpen = false;
+        }
+        #endregion
+
+        
+        
+        #region HasUnsavedChanges
         public bool HasUnsavedChanges
         {
             get
             {
-                return this.IsOpen && this.Show != null;
+                return this.IsOpen
+                    && this.ChangeTracker != null
+                    && this.ChangeTracker.HasChanges;
             }
-        }
+        } 
+        #endregion
 
 
         #region Show
@@ -188,6 +236,10 @@ namespace ShowManager.Client.WPF.ViewModels
             set { this.Set(() => this.PromptModel, ref this._promptModel, value); }
         }
         private IPromptModel _promptModel;
+        #endregion
+
+        #region ChangeTracker
+        public ChangeTracker ChangeTracker { get; private set; }
         #endregion
     }
 }

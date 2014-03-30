@@ -7,10 +7,14 @@ namespace ShowManager.Client.WPF.ViewModels
     interface IEditShowViewModel
     {
         void Populate(string header, Show show);
-        Task<bool> ClearAsyc();
+        Task<bool> TryClearAsyc();
+        Task<bool> TryClearAndCloseAsync();
+        Task CloseAndDiscardChangesAsync();
 
-        //Action<Show> Saved { get; set; }
-        //Action<Show> Refreshed { get; set; }
-        //Action<Show> Deleted { get; set; }
+
+        Action<Show> Save { get; set; }
+        Action<Show> Refresh { get; set; }
+        Action<Show> Cancel { get; set; }
+        Action<Show> Delete { get; set; }
     }
 }

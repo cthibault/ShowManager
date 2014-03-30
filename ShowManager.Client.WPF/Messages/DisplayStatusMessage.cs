@@ -21,7 +21,6 @@ namespace ShowManager.Client.WPF.Messages
         public DisplayStatusMessage(string text, MessageType type)
             : base(string.Empty, text, type)
         {
-
         }
     }
 }

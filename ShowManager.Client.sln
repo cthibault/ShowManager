@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowManager.Client.WPF", "ShowManager.Client.WPF\ShowManager.Client.WPF.csproj", "{3CAF8116-9F33-4062-9382-72F610208B38}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowManager.Client.UnitTest", "ShowManager.Client.UnitTest\ShowManager.Client.UnitTest.csproj", "{1DD40741-B51C-4FE8-BFF3-BA339CA26142}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{3CAF8116-9F33-4062-9382-72F610208B38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CAF8116-9F33-4062-9382-72F610208B38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CAF8116-9F33-4062-9382-72F610208B38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DD40741-B51C-4FE8-BFF3-BA339CA26142}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DD40741-B51C-4FE8-BFF3-BA339CA26142}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DD40741-B51C-4FE8-BFF3-BA339CA26142}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DD40741-B51C-4FE8-BFF3-BA339CA26142}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -41,9 +41,10 @@ namespace ShowManager.Client.WPF.ViewModels
         private void InitializeCommands()
         {
             this.RefreshAllCommand = new RelayCommand(this.OnRefreshAll);
-            //this.RefreshCommand = new RelayCommand<Show>(this.OnRefresh);
-            //this.AddCommand = new RelayCommand(this.OnAdd, () => this.Shows != null);
+            this.AddCommand = new RelayCommand(this.OnAdd, () => this.Shows != null);
             this.EditCommand = new RelayCommand<Show>(this.OnEdit);
+
+            //this.RefreshCommand = new RelayCommand<Show>(this.OnRefresh);
             //this.CloneCommand = new RelayCommand<Show>(this.OnClone);
             //this.DeleteCommand = new RelayCommand<Show>(this.OnDelete);
         }
@@ -54,10 +55,6 @@ namespace ShowManager.Client.WPF.ViewModels
         public RelayCommand RefreshAllCommand { get; private set; }
         
         public void RefreshAll()
-        {
-            this.OnRefreshAll();
-        }
-        private void OnRefreshAll()
         {
             BusyController.Default.SendMessage(true);
 
@@ -71,8 +68,12 @@ namespace ShowManager.Client.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                this.SendErrorMessage(ex.Message);
+                this.SendErrorMessage(ex.Message, ex);
             }
+        }
+        private void OnRefreshAll()
+        {
+            this.RefreshAll();
         }
 
         private void OnRefreshAllComplete(IAsyncResult result)
@@ -100,9 +101,9 @@ namespace ShowManager.Client.WPF.ViewModels
 
                         this.Shows = new DataServiceCollection<Show>(responseResults);
                     }
-                    catch (DataServiceQueryException ex)
+                    catch (Exception ex)
                     {
-                        this.SendErrorMessage(ex.Message);
+                        this.SendErrorMessage(ex.Message, ex);
                     }
                     finally
                     {
@@ -112,14 +113,44 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
+        #region Add
+        public RelayCommand AddCommand { get; private set; }
+
+        private async void OnAdd()
+        {
+            await this.Add();
+        }
+        private async Task Add()
+        {
+            BusyController.Default.SendMessage(true);
+
+            var clear = await this.EditShowViewModel.TryClearAsyc();
+            if (clear)
+            {
+                var show = new Show() { AppInstanceKey = 17 };
+
+                this.Shows.Add(show);
+
+                this.EditShowViewModel.Populate("add", show);
+            }
+
+            BusyController.Default.SendMessage(false);
+        }
+
+        #endregion
+
         #region Edit
         public RelayCommand<Show> EditCommand { get; private set; }
 
         private async void OnEdit(Show show)
         {
+            await this.Edit(show);
+        }   
+        private async Task Edit(Show show)
+        {
             if (show != null)
             {
-                Action<Show> editAction = (s) => 
+                Action<Show> editAction = (s) =>
                 {
                     if (s != null)
                     {
@@ -127,13 +158,79 @@ namespace ShowManager.Client.WPF.ViewModels
                     }
                 };
 
-                var clear = await this.EditShowViewModel.ClearAsyc();
+                BusyController.Default.SendMessage(true);
+
+                var clear = await this.EditShowViewModel.TryClearAsyc();
                 if (clear)
                 {
                     this.GetShowDetails(show.ShowKey, editAction);
                 }
+
+                BusyController.Default.SendMessage(false);
             }
-        }        
+        }
+        #endregion
+
+        #region Save
+        private async Task Save()
+        {
+            BusyController.Default.SendMessage(true);
+
+            Func<Task> saveAction = async () =>
+                {
+                    this.EditShowViewModel.CloseAndDiscardChangesAsync();
+                };
+
+            await this.SaveContext(saveAction);
+
+            BusyController.Default.SendMessage(false);
+        }
+        #endregion
+
+        #region Cancel
+        private async Task Cancel(Show show)
+        {
+            BusyController.Default.SendMessage(true);
+
+            var clear = await this.EditShowViewModel.TryClearAsyc();
+            if (clear)
+            {
+                await this.EditShowViewModel.CloseAndDiscardChangesAsync();
+
+                if (show != null && show.ShowKey > 0)
+                {
+                    this.GetShowDetails(show.ShowKey, null);
+                }
+                else
+                {
+                    this.Shows.Remove(show);
+                }
+            }
+
+            BusyController.Default.SendMessage(false);
+        }
+        #endregion
+
+        #region Delete
+        private async Task Delete(Show show)
+        {
+            BusyController.Default.SendMessage(true);
+
+            var currentShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
+            if (currentShow != null)
+            {
+                this.Shows.Remove(currentShow);
+
+                Func<Task> deleteAction = async () =>
+                    {
+                        await this.EditShowViewModel.CloseAndDiscardChangesAsync();
+                    };
+
+                await this.SaveContext(deleteAction);
+            }
+
+            BusyController.Default.SendMessage(false);
+        }
         #endregion
 
 
@@ -152,7 +249,7 @@ namespace ShowManager.Client.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                this.SendErrorMessage(ex.Message);
+                this.SendErrorMessage(ex.Message, ex);
             }
         }
         private void GetShowDetailsCompleted(IAsyncResult result, Action<Show> callbackAction)
@@ -178,12 +275,15 @@ namespace ShowManager.Client.WPF.ViewModels
                                 this.Shows.Add(show);
                             }
 
-                            callbackAction(show);
+                            if (callbackAction != null)
+                            {
+                                callbackAction(show);
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
-                        this.SendErrorMessage(ex.Message);
+                        this.SendErrorMessage(ex.Message, ex);
                     }
                     finally
                     {
@@ -192,6 +292,78 @@ namespace ShowManager.Client.WPF.ViewModels
                 }, DispatcherPriority.Input);
         } 
         #endregion
+
+        #region SaveContext
+        private async Task SaveContext(Func<Task> callbackAction)
+        {
+            BusyController.Default.SendMessage(true);
+
+            try
+            {
+                this.UpdateAuditableProperties();
+
+                this.Context.BeginSaveChanges(ar => this.SaveContextCompleted(ar, callbackAction), null);
+            }
+            catch (Exception ex)
+            {
+                this.SendErrorMessage(ex.Message, ex);
+            }
+        }
+        private async Task SaveContextCompleted(IAsyncResult result, Func<Task> callbackAction)
+        {
+            try
+            {
+                this.Context.EndSaveChanges(result);
+
+                if (callbackAction != null)
+                {
+                    await callbackAction();
+                }
+            }
+            catch (Exception ex)
+            {
+                this.SendErrorMessage(ex.Message, ex);
+            }
+            finally
+            {
+                Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    BusyController.Default.SendMessage(false);
+
+                }, DispatcherPriority.Input);
+            }
+        }
+        #endregion
+
+        #region UpdateAuditableProperties
+        private void UpdateAuditableProperties()
+        {
+            DateTime now = DateTime.Now;
+
+            foreach (var entityDescriptor in this.Context.Entities.Where(e => e.State == EntityStates.Added || e.State == EntityStates.Modified))
+            {
+                var auditableEntity = entityDescriptor.Entity as IAuditableEntity;
+
+                if (auditableEntity != null)
+                {
+                    if (entityDescriptor.State == EntityStates.Modified)
+                    {
+                        auditableEntity.ModifiedBy = "wpfClient";
+                        auditableEntity.ModifiedDtm = now;
+                    }
+                    else if (entityDescriptor.State == EntityStates.Added)
+                    {
+                        auditableEntity.CreatedBy = "wpfClient";
+                        auditableEntity.CreatedDtm = now;
+                        auditableEntity.ModifiedBy = "wpfClient";
+                        auditableEntity.ModifiedDtm = now;
+                    }
+                }
+            }
+        } 
+        #endregion
+
+
 
         #region Shows
         public DataServiceCollection<Show> Shows
@@ -220,9 +392,10 @@ namespace ShowManager.Client.WPF.ViewModels
                 {
                     this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>();
 
-                    //this._editShowViewModel.Refreshed = show => this.OnRefresh(show);
-                    //this._editShowViewModel.Saved = show => this.OnRefresh(show);
-                    //this._editShowViewModel.Deleted = show => this.OnDelete(show);
+                    this._editShowViewModel.Save = async show => await this.Save();
+                    this._editShowViewModel.Refresh = async show => await this.Edit(show);
+                    this._editShowViewModel.Cancel = async show => await this.Cancel(show);
+                    this._editShowViewModel.Delete = async show => await this.Delete(show);
                 }
 
                 return this._editShowViewModel;

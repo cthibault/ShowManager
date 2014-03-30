@@ -64,7 +64,7 @@
             <controls:Flyout DataContext="{Binding EditShowViewModel}"
                              Header="{Binding Header}" 
                              IsOpen="{Binding IsOpen}"
-                             CloseCommand="{Binding CancelCommand}"
+                             CloseCommand="{Binding CloseCommand}"
                              Theme="Accent"
                              Position="Right"
                              Width="450">
