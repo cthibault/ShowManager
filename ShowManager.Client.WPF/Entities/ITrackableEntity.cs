@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ShowManager.Client.WPF.ShowManagement
 {
-    public interface ITrackableEntity : INotifyPropertyChanged, INotifyPropertyChanging
+    public interface ITrackableObject : INotifyPropertyChanged, INotifyPropertyChanging
     {
     
     }

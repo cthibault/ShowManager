@@ -10,135 +10,173 @@ namespace ShowManager.Client.WPF.Entities
 {
     public class ChangeTracker : IDisposable
     {
-        public ChangeTracker(ITrackableEntity entity, bool trackChanges = false)
-        {
-            if (entity == null)
-            {
-                throw new ArgumentNullException("entity");
-            }
-
-            this.Entity = entity;
-            this.TrackChanges = trackChanges;
-        }
-
-        #region Entity
-        public ITrackableEntity Entity { get; private set; } 
-        #endregion
-
-        #region TrackChanges
-        public bool TrackChanges
-        {
-            get { return this._trackChanges; }
-            set
-            {
-                if (this._trackChanges != value)
-                {
-                    if (value)
-                    {
-                        this._trackChanges = value;
-
-                        if (this.Entity != null)
-                        {
-                            this.Entity.PropertyChanging += this.OnPropertyChanging;
-                            this.Entity.PropertyChanged += this.OnPropertyChanged;
-                        }
-                    }
-                    else
-                    {
-                        if (this.Entity != null)
-                        {
-                            this.Entity.PropertyChanging -= this.OnPropertyChanging;
-                            this.Entity.PropertyChanged -= this.OnPropertyChanged;
-                        }
-
-                        this._trackChanges = value;
-                    }
-                }
-            }
-        }
-        private bool _trackChanges; 
-        #endregion
-
-        #region HasChanges
-        public bool HasChanges
-        {
-            get { return this.ChangeDictionary.Any(); }
-        } 
-        #endregion
-
-        #region ChangeDictionary
-        public Dictionary<string, Tuple<object, object>> ChangeDictionary
+        #region ObjectChangeTrackers
+        public List<ObjectChangeTracker> ObjectChangeTrackers
         {
             get
             {
-                if (this._changeDictionary == null)
+                if (this._objectChangeTrackers == null)
                 {
-                    this._changeDictionary = new Dictionary<string, Tuple<object, object>>();
+                    this._objectChangeTrackers = new List<ObjectChangeTracker>();
                 }
-                return this._changeDictionary;
+                return this._objectChangeTrackers;
             }
+            protected set { this._objectChangeTrackers = value; }
         }
-        private Dictionary<string, Tuple<object, object>> _changeDictionary; 
+        private List<ObjectChangeTracker> _objectChangeTrackers; 
         #endregion
 
-        #region OnPropertyChanging
-        public void OnPropertyChanging(object sender, PropertyChangingEventArgs e)
+        #region Objects
+        public IEnumerable<ITrackableObject> Objects
         {
-            if (!this.ChangeDictionary.ContainsKey(e.PropertyName))
+            get
             {
-                object value = this.Entity.GetType().GetProperty(e.PropertyName).GetValue(this.Entity, null);
-
-                this.ChangeDictionary.Add(e.PropertyName, new Tuple<object, object>(value, null));
+                return this.ObjectChangeTrackers.Select(oct => oct.Object);
             }
         } 
         #endregion
 
-        #region OnPropertyChanged
-        public void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        #region SetTrackChanges
+        /// <summary>
+        /// Sets Track Changes for all Trackable Objects
+        /// </summary>
+        /// <param name="trackChanges"></param>
+        public void SetTrackChanges(bool trackChanges)
         {
-            Tuple<object, object> historical = null;
+            this.ObjectChangeTrackers.ForEach(oct => oct.TrackChanges = trackChanges);
+        } 
 
-            this.ChangeDictionary.TryGetValue(e.PropertyName, out historical);
-
-            if (historical == null)
+        /// <summary>
+        /// Sets Track Changes for the provided Trackable Objects
+        /// </summary>
+        /// <param name="trackableObjects"></param>
+        /// <param name="trackChanges"></param>
+        public void SetTrackChanges(IEnumerable<ITrackableObject> trackableObjects, bool trackChanges)
+        {
+            if (trackableObjects != null)
             {
-                historical = new Tuple<object, object>(null, null);
-            }
-
-            object value = this.Entity.GetType().GetProperty(e.PropertyName).GetValue(this.Entity, null);
-
-            bool bothNull = historical.Item1 == null && value == null;
-
-            if (bothNull || (historical.Item1 != null && historical.Item1.Equals(value)))
-            {
-                if (this.ChangeDictionary.ContainsKey(e.PropertyName))
+                foreach (var trackableObject in trackableObjects)
                 {
-                    this.ChangeDictionary.Remove(e.PropertyName);
+                    var objectChangeTracker = this.GetObjectChangeTracker(trackableObject);
+                    if (objectChangeTracker != null)
+                    {
+                        objectChangeTracker.TrackChanges = trackChanges;
+                    }
                 }
+            }
+        }
+        #endregion
+
+        #region Add
+        public ObjectChangeTracker Add(ITrackableObject trackableObject, bool trackChanges = false)
+        {
+            ObjectChangeTracker objectChangeTracker = this.GetObjectChangeTracker(trackableObject); ;
+
+            if (objectChangeTracker == null)
+            {
+                objectChangeTracker = new ObjectChangeTracker(trackableObject, trackChanges);
+
+                this.ObjectChangeTrackers.Add(objectChangeTracker);
             }
             else
             {
-                var newHistorical = new Tuple<object, object>(historical.Item1, value);
+                objectChangeTracker.TrackChanges = trackChanges;
+            }
 
-                if (this.ChangeDictionary.ContainsKey(e.PropertyName))
+            return objectChangeTracker;
+        }
+        public IEnumerable<ObjectChangeTracker> Add(IEnumerable<ITrackableObject> trackableObjects, bool trackChanges = false)
+        {
+            List<ObjectChangeTracker> objectChangeTrackers = new List<ObjectChangeTracker>();
+
+            if (trackableObjects != null)
+            {
+                foreach (var trackableObject in trackableObjects)
                 {
-                    this.ChangeDictionary[e.PropertyName] = newHistorical;
-                }
-                else
-                {
-                    this.ChangeDictionary.Add(e.PropertyName, newHistorical);
+                    var objectChangeTracker = this.Add(trackableObject, trackChanges);
+                    if (objectChangeTracker != null)
+                    {
+                        objectChangeTrackers.Add(objectChangeTracker);
+                    }
                 }
             }
+
+            return objectChangeTrackers;
+        } 
+        #endregion
+
+        #region Remove
+        public bool Remove(ITrackableObject trackableObject)
+        {
+            bool removed = false;
+
+            var objectChangeTracker = this.GetObjectChangeTracker(trackableObject);
+            if (objectChangeTracker != null)
+            {
+                removed = this.ObjectChangeTrackers.Remove(objectChangeTracker);
+            }
+
+            return removed;
+        }
+        public void Remove(IEnumerable<ITrackableObject> trackableObjects)
+        {
+            if (trackableObjects != null)
+            {
+                foreach (var trackableObject in trackableObjects)
+                {
+                    this.Remove(trackableObject);
+                }
+            }
+        } 
+        #endregion
+
+        #region Clear
+        public void Clear()
+        {
+            this.ObjectChangeTrackers.Clear();
+        }
+        #endregion
+
+        #region HasChanges
+        public bool HasChanges()
+        {
+            bool hasChanges = this.ObjectChangeTrackers.Any(oct => oct.HasChanges);
+
+            return hasChanges;
+        }
+        public bool HasChanges(ITrackableObject trackableObject)
+        {
+            bool hasChanges = false;
+
+            var objectChangeTracker = this.GetObjectChangeTracker(trackableObject);
+            if (objectChangeTracker != null)
+            {
+                hasChanges = objectChangeTracker.HasChanges;
+            }
+
+            return hasChanges;
+        } 
+        #endregion
+
+        #region GetObjectChangeTracker
+        public ObjectChangeTracker GetObjectChangeTracker(ITrackableObject trackableObject)
+        {
+            ObjectChangeTracker objectChangeTracker = null;
+
+            if (trackableObject != null)
+            {
+                objectChangeTracker = this.ObjectChangeTrackers.SingleOrDefault(oct => object.ReferenceEquals(oct.Object, trackableObject));
+            }
+
+            return objectChangeTracker;
         } 
         #endregion
 
         #region Dispose
         public void Dispose()
         {
-            this.TrackChanges = false;
-            this.ChangeDictionary.Clear();
-            this.Entity = null;
-        } 
+            this.Clear();
+        }
         #endregion
     }
 }

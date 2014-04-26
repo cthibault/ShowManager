@@ -102,13 +102,14 @@ namespace ShowManager.Client.WPF.ViewModels
 
             this.Show = show;
 
-            if (this.ChangeTracker != null)
-            {
-                this.ChangeTracker.Dispose();
-                this.ChangeTracker = null;
-            }
+            this.ChangeTracker.Clear();
 
-            this.ChangeTracker = new ChangeTracker(this.Show, true);
+            this.ChangeTracker.Add(this.Show, true);
+
+            foreach (var showParser in this.Show.ShowParsers)
+            {
+                this.ChangeTracker.Add(showParser, true);
+            }
 
             this.IsOpen = true;
         } 
@@ -147,7 +148,6 @@ namespace ShowManager.Client.WPF.ViewModels
         private void Clear()
         {
             this.ChangeTracker.Dispose();
-            this.ChangeTracker = null;
             this.Show = null;
             this.PromptModel = null;
         }
@@ -195,8 +195,7 @@ namespace ShowManager.Client.WPF.ViewModels
             get
             {
                 return this.IsOpen
-                    && this.ChangeTracker != null
-                    && this.ChangeTracker.HasChanges;
+                    && this.ChangeTracker.HasChanges();
             }
         } 
         #endregion
@@ -238,8 +237,19 @@ namespace ShowManager.Client.WPF.ViewModels
         private IPromptModel _promptModel;
         #endregion
 
-        #region ChangeTracker
-        public ChangeTracker ChangeTracker { get; private set; }
+        #region ObjectChangeTracker
+        public ChangeTracker ChangeTracker
+        {
+            get
+            {
+                if (this._changeTracker == null)
+                {
+                    this._changeTracker = new ChangeTracker();
+                }
+                return this._changeTracker;
+            }
+        }
+        private ChangeTracker _changeTracker;
         #endregion
     }
 }

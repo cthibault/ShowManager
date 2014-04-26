@@ -127,10 +127,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\ShowsCommands.cs" />
     <Compile Include="Entities\AuditableEntity.cs" />
+    <Compile Include="Entities\Change.cs" />
     <Compile Include="Entities\ChangeTracker.cs" />
+    <Compile Include="Entities\ShowParser.cs" />
+    <Compile Include="Entities\ObjectChangeTracker.cs" />
     <Compile Include="Entities\ITrackableEntity.cs" />
     <Compile Include="Entities\Show.cs" />
+    <Compile Include="Entities\TrackableObject.cs" />
     <Compile Include="Enums\MessageBoxButton.cs" />
     <Compile Include="Enums\MessageType.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />

@@ -50,8 +50,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="ChangeTrackerUnitTests.cs" />
+    <Compile Include="ObjectChangeTrackerUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestObject.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ShowManager.Client.WPF\ShowManager.Client.WPF.csproj">
+      <Project>{3caf8116-9f33-4062-9382-72f610208b38}</Project>
+      <Name>ShowManager.Client.WPF</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

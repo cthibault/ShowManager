@@ -9,31 +9,23 @@ using ShowManager.Client.WPF.Helpers;
 
 namespace ShowManager.Client.WPF.ShowManagement
 {
-    public partial class Show : TrackableObject, IAuditableEntity
+    public partial class ShowParser : TrackableObject, IAuditableEntity
     {
         partial void OnAppInstanceKeyChanging(int value)
         {
             this.OnPropertyChanging(() => this.AppInstanceKey);
         }
-        partial void OnDirectoryChanging(string value)
+        partial void OnParserKeyChanging(int value)
         {
-            this.OnPropertyChanging(() => this.Directory);
-        }
-        partial void OnImdbIdChanging(string value)
-        {
-            this.OnPropertyChanging(() => this.ImdbId);
+            this.OnPropertyChanging(() => this.ParserKey);
         }
         partial void OnShowKeyChanging(int value)
         {
             this.OnPropertyChanging(() => this.ShowKey);
         }
-        partial void OnTitleChanging(string value)
+        partial void OnShowParserKeyChanging(int value)
         {
-            this.OnPropertyChanging(() => this.Title);
-        }
-        partial void OnTvdbIdChanging(long value)
-        {
-            this.OnPropertyChanging(() => this.TvdbId);
+            this.OnPropertyChanging(() => this.ShowParserKey);
         }
     }
 }
