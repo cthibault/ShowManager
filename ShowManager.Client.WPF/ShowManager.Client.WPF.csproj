@@ -127,10 +127,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\CompositeCommand.cs" />
     <Compile Include="Commands\ShowsCommands.cs" />
     <Compile Include="Entities\AuditableEntity.cs" />
     <Compile Include="Entities\Change.cs" />
     <Compile Include="Entities\ChangeTracker.cs" />
+    <Compile Include="Entities\Parser.cs" />
     <Compile Include="Entities\ShowParser.cs" />
     <Compile Include="Entities\ObjectChangeTracker.cs" />
     <Compile Include="Entities\ITrackableEntity.cs" />
@@ -151,6 +153,8 @@
     <Compile Include="Messages\DisplayStatusMessage.cs" />
     <Compile Include="Models\Interfaces\IPromptModel.cs" />
     <Compile Include="Models\PromptModel.cs" />
+    <Compile Include="Providers\BaseProvider.cs" />
+    <Compile Include="Providers\ShowProvider.cs" />
     <Compile Include="Service References\ShowManagement\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -166,6 +170,12 @@
       <DependentUpon>EditShowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Interfaces\IView.cs" />
+    <Compile Include="Controls\ParsersGridControl.xaml.cs">
+      <DependentUpon>ParsersGridControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ShowInfoControl.xaml.cs">
+      <DependentUpon>ShowInfoControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ShowsView.xaml.cs">
       <DependentUpon>ShowsView.xaml</DependentUpon>
     </Compile>
@@ -186,6 +196,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\EditShowView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ParsersGridControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ShowInfoControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -240,7 +258,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Behaviors\" />
-    <Folder Include="Controls\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Entypo-license.txt" />

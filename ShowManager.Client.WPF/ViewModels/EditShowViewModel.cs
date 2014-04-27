@@ -104,12 +104,7 @@ namespace ShowManager.Client.WPF.ViewModels
 
             this.ChangeTracker.Clear();
 
-            this.ChangeTracker.Add(this.Show, true);
-
-            foreach (var showParser in this.Show.ShowParsers)
-            {
-                this.ChangeTracker.Add(showParser, true);
-            }
+            this.Show.Track(this.ChangeTracker, true);
 
             this.IsOpen = true;
         } 
@@ -143,8 +138,7 @@ namespace ShowManager.Client.WPF.ViewModels
             }
 
             return tcs.Task;
-        } 
-        
+        }         
         private void Clear()
         {
             this.ChangeTracker.Dispose();

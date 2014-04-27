@@ -15,6 +15,7 @@ using System.Windows.Threading;
 using GalaSoft.MvvmLight.Messaging;
 using ShowManager.Client.WPF.Messages;
 using System.Runtime.CompilerServices;
+using ShowManager.Client.WPF.Providers;
 
 
 namespace ShowManager.Client.WPF.ViewModels
@@ -54,62 +55,33 @@ namespace ShowManager.Client.WPF.ViewModels
         private DataServiceQueryContinuation<Show> _showContinuationToken;
         public RelayCommand RefreshAllCommand { get; private set; }
         
-        public void RefreshAll()
+        private async void OnRefreshAll()
+        {
+            await this.RefreshAll();
+        }
+        public async Task RefreshAll()
         {
             BusyController.Default.SendMessage(true);
 
-            this._showContinuationToken = null;
-
-            var query = this.Context.Shows as DataServiceQuery<Show>;
+            var sp = new ShowProvider(this.Context);
 
             try
             {
-                query.BeginExecute(this.OnRefreshAllComplete, query);
+                var showsResult = await sp.GetBasicInformationForAllShows();
+
+                Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    this.Shows = showsResult;
+                }, DispatcherPriority.Input);
             }
             catch (Exception ex)
             {
-                this.SendErrorMessage(ex.Message, ex);
+                this.SendErrorMessage("Error Retrieving Shows", ex);
             }
-        }
-        private void OnRefreshAll()
-        {
-            this.RefreshAll();
-        }
-
-        private void OnRefreshAllComplete(IAsyncResult result)
-        {
-            Dispatcher.CurrentDispatcher.Invoke(() =>
-                {
-                    try
-                    {
-                        IEnumerable<Show> responseResults = null;
-
-                        if (this._showContinuationToken == null)
-                        {
-                            // Since this is the first page, we get back the query
-                            var query = result.AsyncState as DataServiceQuery<Show>;
-
-                            // Get the response of the query
-                            responseResults = query.EndExecute(result);
-                        }
-                        else
-                        {
-                            // This is not the first page, so we get back the context
-                            //svcContext = result.AsyncState as NorthwindEntities;
-                            //response = svcContext.EndExecute<Order>(result);
-                        }
-
-                        this.Shows = new DataServiceCollection<Show>(responseResults);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.SendErrorMessage(ex.Message, ex);
-                    }
-                    finally
-                    {
-                        BusyController.Default.SendMessage(false);
-                    }
-                }, DispatcherPriority.Input);
+            finally
+            {
+                BusyController.Default.SendMessage(false);
+            }
         }
         #endregion
 
@@ -150,20 +122,17 @@ namespace ShowManager.Client.WPF.ViewModels
         {
             if (show != null)
             {
-                Action<Show> editAction = (s) =>
-                {
-                    if (s != null)
-                    {
-                        this.EditShowViewModel.Populate("edit", s);
-                    }
-                };
-
                 BusyController.Default.SendMessage(true);
 
                 var clear = await this.EditShowViewModel.TryClearAsyc();
                 if (clear)
                 {
-                    this.GetShowDetails(show.ShowKey, editAction);
+                    var showResult = await this.GetShowDetails(show.ShowKey);
+
+                    if (showResult != null)
+                    {
+                        this.EditShowViewModel.Populate("edit", showResult);
+                    }
                 }
 
                 BusyController.Default.SendMessage(false);
@@ -176,12 +145,21 @@ namespace ShowManager.Client.WPF.ViewModels
         {
             BusyController.Default.SendMessage(true);
 
-            Func<Task> saveAction = async () =>
-                {
-                    this.EditShowViewModel.CloseAndDiscardChangesAsync();
-                };
+            var sp = new ShowProvider(this.Context);
 
-            await this.SaveContext(saveAction);
+            try
+            {
+                var saveSuccess = await sp.SaveContext();
+
+                if (saveSuccess)
+                {
+                    await this.EditShowViewModel.CloseAndDiscardChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                this.SendErrorMessage("Error Retrieving Shows", ex);
+            }
 
             BusyController.Default.SendMessage(false);
         }
@@ -199,7 +177,7 @@ namespace ShowManager.Client.WPF.ViewModels
 
                 if (show != null && show.ShowKey > 0)
                 {
-                    this.GetShowDetails(show.ShowKey, null);
+                    await this.GetShowDetails(show.ShowKey);
                 }
                 else
                 {
@@ -221,12 +199,21 @@ namespace ShowManager.Client.WPF.ViewModels
             {
                 this.Shows.Remove(currentShow);
 
-                Func<Task> deleteAction = async () =>
+                var sp = new ShowProvider(this.Context);
+
+                try
+                {
+                    var saveSuccess = await sp.SaveContext();
+
+                    if (saveSuccess)
                     {
                         await this.EditShowViewModel.CloseAndDiscardChangesAsync();
-                    };
-
-                await this.SaveContext(deleteAction);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.SendErrorMessage("Error Retrieving Shows", ex);
+                }
             }
 
             BusyController.Default.SendMessage(false);
@@ -235,132 +222,39 @@ namespace ShowManager.Client.WPF.ViewModels
 
 
         #region GetShowDetails
-        private void GetShowDetails(int showKey, Action<Show> callbackAction)
+        private async Task<Show> GetShowDetails(int showKey)
         {
-            BusyController.Default.SendMessage(true);
+            Show show = null;
 
-            var query = this.Context.Shows
-                .Expand(s => s.ShowParsers)
-                .Where(s => s.ShowKey == showKey) as DataServiceQuery<Show>;
+            var sp = new ShowProvider(this.Context);
 
             try
             {
-                query.BeginExecute(ar => this.GetShowDetailsCompleted(ar, callbackAction), query);
-            }
-            catch (Exception ex)
-            {
-                this.SendErrorMessage(ex.Message, ex);
-            }
-        }
-        private void GetShowDetailsCompleted(IAsyncResult result, Action<Show> callbackAction)
-        {
-            Dispatcher.CurrentDispatcher.Invoke(() =>
-                {
-                    try
-                    {
-                        var query = result.AsyncState as DataServiceQuery<Show>;
+                show = await sp.GetShowDetails(showKey);
 
-                        var responseResults = query.EndExecute(result);
-
-                        var show = responseResults.SingleOrDefault();
-                        if (show != null)
-                        {
-                            var existingShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
-                            if (existingShow != null)
-                            {
-                                existingShow = show;
-                            }
-                            else
-                            {
-                                this.Shows.Add(show);
-                            }
-
-                            if (callbackAction != null)
-                            {
-                                callbackAction(show);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.SendErrorMessage(ex.Message, ex);
-                    }
-                    finally
-                    {
-                        BusyController.Default.SendMessage(false);
-                    }
-                }, DispatcherPriority.Input);
-        } 
-        #endregion
-
-        #region SaveContext
-        private async Task SaveContext(Func<Task> callbackAction)
-        {
-            BusyController.Default.SendMessage(true);
-
-            try
-            {
-                this.UpdateAuditableProperties();
-
-                this.Context.BeginSaveChanges(ar => this.SaveContextCompleted(ar, callbackAction), null);
-            }
-            catch (Exception ex)
-            {
-                this.SendErrorMessage(ex.Message, ex);
-            }
-        }
-        private async Task SaveContextCompleted(IAsyncResult result, Func<Task> callbackAction)
-        {
-            try
-            {
-                this.Context.EndSaveChanges(result);
-
-                if (callbackAction != null)
-                {
-                    await callbackAction();
-                }
-            }
-            catch (Exception ex)
-            {
-                this.SendErrorMessage(ex.Message, ex);
-            }
-            finally
-            {
                 Dispatcher.CurrentDispatcher.Invoke(() =>
                 {
-                    BusyController.Default.SendMessage(false);
-
+                    if (show != null)
+                    {
+                        var existingShow = this.Shows.SingleOrDefault(s => s.ShowKey == show.ShowKey);
+                        if (existingShow != null)
+                        {
+                            existingShow = show;
+                        }
+                        else
+                        {
+                            this.Shows.Add(show);
+                        }
+                    }
                 }, DispatcherPriority.Input);
             }
-        }
-        #endregion
-
-        #region UpdateAuditableProperties
-        private void UpdateAuditableProperties()
-        {
-            DateTime now = DateTime.Now;
-
-            foreach (var entityDescriptor in this.Context.Entities.Where(e => e.State == EntityStates.Added || e.State == EntityStates.Modified))
+            catch (Exception ex)
             {
-                var auditableEntity = entityDescriptor.Entity as IAuditableEntity;
-
-                if (auditableEntity != null)
-                {
-                    if (entityDescriptor.State == EntityStates.Modified)
-                    {
-                        auditableEntity.ModifiedBy = "wpfClient";
-                        auditableEntity.ModifiedDtm = now;
-                    }
-                    else if (entityDescriptor.State == EntityStates.Added)
-                    {
-                        auditableEntity.CreatedBy = "wpfClient";
-                        auditableEntity.CreatedDtm = now;
-                        auditableEntity.ModifiedBy = "wpfClient";
-                        auditableEntity.ModifiedDtm = now;
-                    }
-                }
+                this.SendErrorMessage("Error Retrieving Shows", ex);
             }
-        } 
+
+            return show;
+        }
         #endregion
 
 

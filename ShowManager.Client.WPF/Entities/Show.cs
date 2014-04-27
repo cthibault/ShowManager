@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ShowManager.Client.WPF.Entities;
 using ShowManager.Client.WPF.Helpers;
 
 namespace ShowManager.Client.WPF.ShowManagement
@@ -34,6 +35,19 @@ namespace ShowManager.Client.WPF.ShowManagement
         partial void OnTvdbIdChanging(long value)
         {
             this.OnPropertyChanging(() => this.TvdbId);
+        }
+
+        public override void Track(ChangeTracker changeTracker, bool track)
+        {
+            if (changeTracker != null)
+            {
+                changeTracker.Add(this, track);
+
+                foreach (var showParser in this.ShowParsers)
+                {
+                    showParser.Track(changeTracker, track);
+                }
+            }
         }
     }
 }

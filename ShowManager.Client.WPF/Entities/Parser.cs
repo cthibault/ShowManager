@@ -10,7 +10,7 @@ using ShowManager.Client.WPF.Helpers;
 
 namespace ShowManager.Client.WPF.ShowManagement
 {
-    public partial class ShowParser : TrackableObject, IAuditableEntity
+    public partial class Parser : TrackableObject, IAuditableEntity
     {
         partial void OnAppInstanceKeyChanging(int value)
         {
@@ -20,13 +20,17 @@ namespace ShowManager.Client.WPF.ShowManagement
         {
             this.OnPropertyChanging(() => this.ParserKey);
         }
-        partial void OnShowKeyChanging(int value)
+        partial void OnParserTypeKeyChanging(int value)
         {
-            this.OnPropertyChanging(() => this.ShowKey);
+            this.OnPropertyChanging(() => this.ParserTypeKey);
         }
-        partial void OnShowParserKeyChanging(int value)
+        partial void OnExcludedCharactersChanging(string value)
         {
-            this.OnPropertyChanging(() => this.ShowParserKey);
+            this.OnPropertyChanging(() => this.ExcludedCharacters);
+        }
+        partial void OnPatternChanging(string value)
+        {
+            this.OnPropertyChanging(() => this.Pattern);
         }
 
         public override void Track(ChangeTracker changeTracker, bool track)
@@ -34,11 +38,6 @@ namespace ShowManager.Client.WPF.ShowManagement
             if (changeTracker != null)
             {
                 changeTracker.Add(this, track);
-
-                if (this.Parser != null)
-                {
-                    this.Parser.Track(changeTracker, track);
-                }
             }
         }
     }

@@ -70,7 +70,7 @@ namespace ShowManager.Client.WPF.Entities
         #region Add
         public ObjectChangeTracker Add(ITrackableObject trackableObject, bool trackChanges = false)
         {
-            ObjectChangeTracker objectChangeTracker = this.GetObjectChangeTracker(trackableObject); ;
+            ObjectChangeTracker objectChangeTracker = this.GetObjectChangeTracker(trackableObject);
 
             if (objectChangeTracker == null)
             {

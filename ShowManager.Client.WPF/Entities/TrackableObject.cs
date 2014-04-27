@@ -5,13 +5,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ShowManager.Client.WPF.Entities;
 using ShowManager.Client.WPF.Helpers;
 
 namespace ShowManager.Client.WPF.ShowManagement
 {
-    public class TrackableObject : ITrackableObject
+    public abstract class TrackableObject : ITrackableObject
     {
-
         #region OnPropertyChanging
         public event PropertyChangingEventHandler PropertyChanging;
 
@@ -43,5 +43,7 @@ namespace ShowManager.Client.WPF.ShowManagement
             }
         } 
         #endregion
+
+        public abstract void Track(ChangeTracker changeTracker, bool track);
     }
 }
