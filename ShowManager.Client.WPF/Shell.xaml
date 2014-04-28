@@ -4,7 +4,7 @@
                       xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       Title="SHOW MANAGER" 
                       GlowBrush="{DynamicResource AccentColorBrush}"
-                      Height="400" Width="750">
+                      Height="600" Width="1200">
     
     <controls:MetroWindow.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />

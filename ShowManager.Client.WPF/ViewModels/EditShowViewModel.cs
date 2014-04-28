@@ -37,6 +37,8 @@ namespace ShowManager.Client.WPF.ViewModels
             this.SaveCommand = new RelayCommand(this.OnSave, () => this.HasUnsavedChanges);
             this.RefreshCommand = new RelayCommand(this.OnRefresh, () => this.Show != null && this.Show.ShowKey > 0);
             this.DeleteCommand = new RelayCommand(this.OnDelete, () => this.Show != null && this.Show.ShowKey > 0);
+
+            this.BrowseDirectoryCommand = new RelayCommand(this.OnBrowseDirectory);
         }
         #endregion
 
@@ -48,8 +50,7 @@ namespace ShowManager.Client.WPF.ViewModels
         public Action<Show> Delete { get; set; }
         #endregion
 
-
-
+        #region Show
         #region Save
         public RelayCommand SaveCommand { get; private set; }
         private void OnSave()
@@ -87,11 +88,64 @@ namespace ShowManager.Client.WPF.ViewModels
         public RelayCommand DeleteCommand { get; private set; }
         private async void OnDelete()
         {
-            if (this.Delete != null)
+            var confirmDelete = await this.ConfirmDelete();
+
+            if (this.Delete != null && confirmDelete)
             {
                 this.Delete(this.Show);
             }
         }
+        private Task<bool> ConfirmDelete()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            Action accept = () =>
+            {
+                tcs.TrySetResult(true);
+            };
+
+            Action reject = () =>
+            {
+                this.PromptModel = null;
+                tcs.TrySetResult(false);
+            };
+
+            this.PromptModel = new PromptModel("Delete?", accept, reject);
+
+            return tcs.Task;
+        }
+        #endregion 
+
+        #region BrowseDirectory
+        public RelayCommand BrowseDirectoryCommand { get; private set; }
+        private void OnBrowseDirectory()
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                ShowNewFolderButton = true,
+                Description = "Select Show's Directory",
+                RootFolder = Environment.SpecialFolder.MyComputer,
+                SelectedPath = this.Show.Directory
+            };
+
+            var result = dialog.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                this.Show.Directory = dialog.SelectedPath;
+            }
+        }
+        #endregion
+        #endregion
+
+        #region Parsers
+        #region Save
+        public RelayCommand AddParserCommand { get; private set; }
+        private void OnAddParser()
+        {
+            
+        }
+        #endregion
         #endregion
 
 

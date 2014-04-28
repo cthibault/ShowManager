@@ -33,9 +33,27 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="Evaluate" Margin="1,1,3,1" Command="{Binding DataContext.EvaluateParserCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}" />
-                                <Button Content="Clone" Margin="1" Command="{Binding DataContext.CloneParserCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}" />
-                                <Button Content="Delete" Margin="1" Command="{Binding DataContext.DeleteParserCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}" />
+                                <Button ToolTip="evaluate" Margin="2,0">
+                                    <Rectangle Width="15" Height="15">
+                                        <Rectangle.Fill>
+                                            <VisualBrush Stretch="Uniform" Visual="{DynamicResource appbar_console}" />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Button>
+                                <Button ToolTip="clone" Margin="2,0">
+                                    <Rectangle Width="15" Height="15">
+                                        <Rectangle.Fill>
+                                            <VisualBrush Stretch="Uniform" Visual="{DynamicResource appbar_clipboard}" />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Button>
+                                <Button ToolTip="delete" Margin="2,0">
+                                    <Rectangle Width="15" Height="15">
+                                        <Rectangle.Fill>
+                                            <VisualBrush Stretch="Uniform" Visual="{DynamicResource appbar_delete}" />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Button>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
