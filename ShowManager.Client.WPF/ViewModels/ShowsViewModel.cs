@@ -51,6 +51,7 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
+
         #region RefreshAll
         private DataServiceQueryContinuation<Show> _showContinuationToken;
         public RelayCommand RefreshAllCommand { get; private set; }
@@ -96,14 +97,17 @@ namespace ShowManager.Client.WPF.ViewModels
         {
             BusyController.Default.SendMessage(true);
 
-            var clear = await this.EditShowViewModel.TryClearAsyc();
+            var editShowViewModel = await GetEditShowViewModel();
+
+            var clear = await editShowViewModel.TryClearAsyc();
+
             if (clear)
             {
                 var show = new Show() { AppInstanceKey = 17 };
 
                 this.Shows.Add(show);
 
-                this.EditShowViewModel.Populate("add", show);
+                editShowViewModel.Populate("add", show);
             }
 
             BusyController.Default.SendMessage(false);
@@ -124,14 +128,16 @@ namespace ShowManager.Client.WPF.ViewModels
             {
                 BusyController.Default.SendMessage(true);
 
-                var clear = await this.EditShowViewModel.TryClearAsyc();
+                var editShowViewModel = await GetEditShowViewModel();
+
+                var clear = await editShowViewModel.TryClearAsyc();
                 if (clear)
                 {
                     var showResult = await this.GetShowDetails(show.ShowKey);
 
                     if (showResult != null)
                     {
-                        this.EditShowViewModel.Populate("edit", showResult);
+                        editShowViewModel.Populate("edit", showResult);
                     }
                 }
 
@@ -153,7 +159,9 @@ namespace ShowManager.Client.WPF.ViewModels
 
                 if (saveSuccess)
                 {
-                    await this.EditShowViewModel.CloseAndDiscardChangesAsync();
+                    var editShowViewModel = await GetEditShowViewModel();
+
+                    await editShowViewModel.CloseAndDiscardChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -170,10 +178,12 @@ namespace ShowManager.Client.WPF.ViewModels
         {
             BusyController.Default.SendMessage(true);
 
-            var clear = await this.EditShowViewModel.TryClearAsyc();
+            var editShowViewModel = await GetEditShowViewModel();
+
+            var clear = await editShowViewModel.TryClearAsyc();
             if (clear)
             {
-                await this.EditShowViewModel.CloseAndDiscardChangesAsync();
+                await editShowViewModel.CloseAndDiscardChangesAsync();
 
                 if (show != null && show.ShowKey > 0)
                 {
@@ -207,7 +217,9 @@ namespace ShowManager.Client.WPF.ViewModels
 
                     if (saveSuccess)
                     {
-                        await this.EditShowViewModel.CloseAndDiscardChangesAsync();
+                        var editShowViewModel = await GetEditShowViewModel();
+
+                        await editShowViewModel.CloseAndDiscardChangesAsync();
                     }
                 }
                 catch (Exception ex)
@@ -257,6 +269,61 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         #endregion
 
+        #region GetParserTypes
+        private async Task<List<ParserType>> GetParserTypes()
+        {
+            List<ParserType> parserTypes = null;
+
+            var context = ContextFactory.Create(MergeOption.NoTracking);
+            var domainValueProvider = new DomainValueProvider(context);
+
+            try
+            {
+                parserTypes = await domainValueProvider.GetParserTypes();
+            }
+            catch (Exception ex)
+            {
+                this.SendErrorMessage("Error Retrieving ParserTypes", ex);
+            }
+
+            return parserTypes ?? new List<ParserType>(0);
+        } 
+        #endregion
+
+        #region EditShowViewModel
+        private async Task<IEditShowViewModel> GetEditShowViewModel()
+        {
+            if (this._editShowViewModel == null)
+            {
+                var parserTypes = await this.GetParserTypes();
+
+                this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>(
+                    new ParameterOverrides
+                        {
+                            { "parserTypes", parserTypes }
+                        });
+
+                this._editShowViewModel.Save = async show => await this.Save();
+                this._editShowViewModel.Refresh = async show => await this.Edit(show);
+                this._editShowViewModel.Cancel = async show => await this.Cancel(show);
+                this._editShowViewModel.Delete = async show => await this.Delete(show);
+
+                this.RaisePropertyChanged(() => this.EditShowViewModel);
+            }
+
+            return this._editShowViewModel;
+        }
+
+        /// <summary>
+        /// This Property should only be used for DataBinding
+        /// </summary>
+        public IEditShowViewModel EditShowViewModel
+        {
+            get { return this._editShowViewModel; }
+        }
+        private IEditShowViewModel _editShowViewModel;
+        #endregion
+
 
 
         #region Shows
@@ -275,27 +342,6 @@ namespace ShowManager.Client.WPF.ViewModels
             set { this.Set(() => this.SelectedShow, ref this._selectedShow, value); }
         }
         private Show _selectedShow;
-        #endregion
-
-        #region EditShowViewModel
-        public IEditShowViewModel EditShowViewModel
-        {
-            get
-            {
-                if (this._editShowViewModel == null)
-                {
-                    this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>();
-
-                    this._editShowViewModel.Save = async show => await this.Save();
-                    this._editShowViewModel.Refresh = async show => await this.Edit(show);
-                    this._editShowViewModel.Cancel = async show => await this.Cancel(show);
-                    this._editShowViewModel.Delete = async show => await this.Delete(show);
-                }
-
-                return this._editShowViewModel;
-            }
-        }
-        private IEditShowViewModel _editShowViewModel;
         #endregion
 
         #region Context

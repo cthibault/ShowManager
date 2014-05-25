@@ -15,9 +15,11 @@ namespace ShowManager.Client.WPF.ViewModels
 {
     class EditShowViewModel : BaseViewModel, IEditShowViewModel
     {
-        public EditShowViewModel(IUnityContainer unityContainer)
+        public EditShowViewModel(IUnityContainer unityContainer, List<ParserType> parserTypes)
             : base(unityContainer)
         {
+            this.ParserTypes = parserTypes.OrderBy(pt => pt.SortSeq).ToList();
+
             this.Initialize();
         }
 
@@ -274,6 +276,22 @@ namespace ShowManager.Client.WPF.ViewModels
             private set { this.Set(() => this.IsOpen, ref this._isOpen, value); }
         }
         private bool _isOpen;
+        #endregion
+
+        #region ParserTypes
+        public List<ParserType> ParserTypes
+        {
+            get
+            {
+                if (this._parserTypes == null)
+                {
+                    this._parserTypes = new List<ParserType>();
+                }
+                return this._parserTypes;
+            }
+            private set { this._parserTypes = value; }
+        }
+        private List<ParserType> _parserTypes;
         #endregion
 
         #region PromptModel

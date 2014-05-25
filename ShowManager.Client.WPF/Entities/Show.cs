@@ -37,12 +37,10 @@ namespace ShowManager.Client.WPF.ShowManagement
             this.OnPropertyChanging(() => this.TvdbId);
         }
 
-        public override void Track(ChangeTracker changeTracker, bool track)
+        protected override void TrackAdditionalEntities(ChangeTracker changeTracker, bool track)
         {
             if (changeTracker != null)
             {
-                changeTracker.Add(this, track);
-
                 foreach (var showParser in this.ShowParsers)
                 {
                     showParser.Track(changeTracker, track);

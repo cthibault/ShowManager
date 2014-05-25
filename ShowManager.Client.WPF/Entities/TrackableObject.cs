@@ -44,6 +44,18 @@ namespace ShowManager.Client.WPF.ShowManagement
         } 
         #endregion
 
-        public abstract void Track(ChangeTracker changeTracker, bool track);
+        public virtual void Track(ChangeTracker changeTracker, bool track)
+        {
+            if (changeTracker != null)
+            {
+                changeTracker.Add(this, track);
+
+                this.TrackAdditionalEntities(changeTracker, track);
+            }
+        }
+
+        protected virtual void TrackAdditionalEntities(ChangeTracker changeTracker, bool track)
+        {
+        }
     }
 }

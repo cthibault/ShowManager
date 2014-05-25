@@ -54,13 +54,5 @@ namespace ShowManager.Client.UnitTest
             }
         }
         private string _name;
-
-        public override void Track(ChangeTracker changeTracker, bool track)
-        {
-            if (changeTracker != null)
-            {
-                changeTracker.Add(this, track);
-            }
-        }
     }
 }

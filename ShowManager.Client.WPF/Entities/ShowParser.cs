@@ -29,16 +29,11 @@ namespace ShowManager.Client.WPF.ShowManagement
             this.OnPropertyChanging(() => this.ShowParserKey);
         }
 
-        public override void Track(ChangeTracker changeTracker, bool track)
+        protected override void TrackAdditionalEntities(ChangeTracker changeTracker, bool track)
         {
-            if (changeTracker != null)
+            if (changeTracker != null && this.Parser != null)
             {
-                changeTracker.Add(this, track);
-
-                if (this.Parser != null)
-                {
-                    this.Parser.Track(changeTracker, track);
-                }
+                this.Parser.Track(changeTracker, track);
             }
         }
     }

@@ -155,6 +155,7 @@
     <Compile Include="Models\Interfaces\IPromptModel.cs" />
     <Compile Include="Models\PromptModel.cs" />
     <Compile Include="Providers\BaseProvider.cs" />
+    <Compile Include="Providers\DomainValueProvider.cs" />
     <Compile Include="Providers\ShowProvider.cs" />
     <Compile Include="Service References\ShowManagement\Reference.cs">
       <AutoGen>True</AutoGen>

@@ -5,6 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    
+    <UserControl.Resources>
+        <Style x:Key="ParserTypeComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="ItemsSource" Value="{Binding DataContext.ParserTypes, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+        </Style>
+    </UserControl.Resources>
+    
     <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -16,17 +23,15 @@
                 <DataGridTextColumn Header="Pattern" Binding="{Binding Parser.Pattern}" />
                 <DataGridTextColumn Header="Excluded Chars" Binding="{Binding Parser.ExcludedCharacters}" />
 
-                <DataGridComboBoxColumn Header="Type" SelectedValueBinding="{Binding Type}">
-                    <DataGridComboBoxColumn.ElementStyle>
-                        <Style TargetType="ComboBox">
-                            <Setter Property="ItemsSource" Value="{Binding DataContext.ParserTypes, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
-                        </Style>
-                    </DataGridComboBoxColumn.ElementStyle>
-                    <DataGridComboBoxColumn.EditingElementStyle>
-                        <Style TargetType="ComboBox">
-                            <Setter Property="ItemsSource" Value="{Binding DataContext.ParserTypes, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
-                        </Style>
-                    </DataGridComboBoxColumn.EditingElementStyle>
+                <DataGridComboBoxColumn Header="Type" 
+                                        DisplayMemberPath="Name"
+                                        SelectedValuePath="ParserTypeKey"
+                                        SelectedValueBinding="{Binding Parser.ParserTypeKey}"
+                                        ElementStyle="{StaticResource ParserTypeComboBoxStyle}"
+                                        EditingElementStyle="{StaticResource ParserTypeComboBoxStyle}">
+                    <!--
+                    SelectedItemBinding="{Binding Parser.ParserType}"
+                    -->
                 </DataGridComboBoxColumn>
 
                 <DataGridTemplateColumn>
