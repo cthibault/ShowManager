@@ -15,9 +15,10 @@ namespace ShowManager.Client.WPF.ViewModels
 {
     class EditShowViewModel : BaseViewModel, IEditShowViewModel
     {
-        public EditShowViewModel(IUnityContainer unityContainer, List<ParserType> parserTypes)
+        public EditShowViewModel(IUnityContainer unityContainer, ShowManagementDBEntities context, List<ParserType> parserTypes)
             : base(unityContainer)
         {
+            this.Context = context;
             this.ParserTypes = parserTypes.OrderBy(pt => pt.SortSeq).ToList();
 
             this.Initialize();
@@ -35,12 +36,19 @@ namespace ShowManager.Client.WPF.ViewModels
         }
         private void InitializeCommands()
         {
+            // App Bar Commands
             this.CancelCommand = new RelayCommand(this.OnCancel);
             this.SaveCommand = new RelayCommand(this.OnSave, () => this.HasUnsavedChanges);
             this.RefreshCommand = new RelayCommand(this.OnRefresh, () => this.Show != null && this.Show.ShowKey > 0);
             this.DeleteCommand = new RelayCommand(this.OnDelete, () => this.Show != null && this.Show.ShowKey > 0);
 
+            // Show Detail Commands
             this.BrowseDirectoryCommand = new RelayCommand(this.OnBrowseDirectory);
+
+            // Parser Grid Commands
+            this.AddParserCommand = new RelayCommand(this.OnAddParser, () => this.Show != null);
+            this.CloneParserCommand = new RelayCommand<Parser>(this.OnCloneParser);
+            this.DeleteParserCommand = new RelayCommand<Parser>(this.OnDeleteParser);
         }
         #endregion
 
@@ -141,11 +149,55 @@ namespace ShowManager.Client.WPF.ViewModels
         #endregion
 
         #region Parsers
-        #region Save
+        #region Add
         public RelayCommand AddParserCommand { get; private set; }
         private void OnAddParser()
         {
-            
+            var parser = new Parser { AppInstanceKey = this.Show.AppInstanceKey };
+
+            parser.Track(this.ChangeTracker, true);
+
+            this.Show.Parsers.Add(parser);
+        }
+        #endregion
+
+        #region Delete
+        public RelayCommand<Parser> CloneParserCommand { get; private set; }
+        private void OnCloneParser(Parser parser)
+        {
+            if (parser != null)
+            {
+                var newParser = new Parser();
+
+                newParser.Track(this.ChangeTracker, true);
+
+                newParser.AppInstanceKey = parser.AppInstanceKey;
+                newParser.ParserTypeKey = parser.ParserTypeKey;
+                newParser.Pattern = parser.Pattern;
+                newParser.ExcludedCharacters = parser.ExcludedCharacters;
+                newParser.ShowKey = parser.ShowKey;
+
+                this.Show.Parsers.Add(newParser);
+            }
+        }
+        #endregion
+
+        #region Delete
+        public RelayCommand<Parser> DeleteParserCommand { get; private set; }
+        private void OnDeleteParser(Parser parser)
+        {
+            if (parser != null)
+            {
+                this.Show.Parsers.Remove(parser);
+
+                // HACK
+                var parserChangeTracker = this.ChangeTracker.GetObjectChangeTracker(parser);
+
+                if (parserChangeTracker != null)
+                {
+                    parserChangeTracker.ManualOverrideHasChanges = true;
+                }
+            }
         }
         #endregion
         #endregion
@@ -316,6 +368,10 @@ namespace ShowManager.Client.WPF.ViewModels
             }
         }
         private ChangeTracker _changeTracker;
+        #endregion
+
+        #region Context
+        private ShowManagementDBEntities Context { get; set; }
         #endregion
     }
 }

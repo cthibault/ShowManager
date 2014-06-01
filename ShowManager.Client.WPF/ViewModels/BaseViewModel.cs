@@ -30,7 +30,7 @@ namespace ShowManager.Client.WPF.ViewModels
             if (callingMethodName != null)
             {
                 message = string.Format("'{0}' => {1}", callingMethodName, message);
-            }
+            } 
 
             if (exception != null)
             {

@@ -31,6 +31,5 @@ namespace ShowManagerAzureWebRole
         public DbSet<Parser> Parsers { get; set; }
         public DbSet<ParserType> ParserTypes { get; set; }
         public DbSet<Show> Shows { get; set; }
-        public DbSet<ShowParser> ShowParsers { get; set; }
     }
 }

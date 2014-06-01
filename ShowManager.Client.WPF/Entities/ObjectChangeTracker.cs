@@ -21,6 +21,14 @@ namespace ShowManager.Client.WPF.Entities
             this.TrackChanges = trackChanges;
         }
 
+        #region GUID
+        public Guid GUID
+        {
+            get { return this._guid; }
+        }
+        private readonly Guid _guid = Guid.NewGuid();
+        #endregion
+
         #region Object
         public ITrackableObject Object { get; private set; }
         #endregion
@@ -64,8 +72,13 @@ namespace ShowManager.Client.WPF.Entities
         #region HasChanges
         public bool HasChanges
         {
-            get { return this.ChangesInternal.Any(); }
+            get { return this.ManualOverrideHasChanges || this.ChangesInternal.Any(); }
         }
+        #endregion
+
+        #region ManualOverrideHasChanges
+        // HACK
+        public bool ManualOverrideHasChanges { get; set; }
         #endregion
 
         #region Changes

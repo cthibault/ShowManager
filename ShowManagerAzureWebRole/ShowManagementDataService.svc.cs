@@ -21,7 +21,6 @@ namespace ShowManagerAzureWebRole
             config.SetEntitySetAccessRule("ApplicationInstances", EntitySetRights.AllRead | EntitySetRights.AllWrite);
             config.SetEntitySetAccessRule("ParserTypes", EntitySetRights.AllRead | EntitySetRights.AllWrite);
             config.SetEntitySetAccessRule("Parsers", EntitySetRights.AllRead | EntitySetRights.AllWrite);
-            config.SetEntitySetAccessRule("ShowParsers", EntitySetRights.AllRead | EntitySetRights.AllWrite);
             config.SetEntitySetAccessRule("Shows", EntitySetRights.AllRead | EntitySetRights.AllWrite);
 
             config.UseVerboseErrors = true;

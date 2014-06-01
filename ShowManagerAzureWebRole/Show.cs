@@ -16,7 +16,7 @@ namespace ShowManagerAzureWebRole
     {
         public Show()
         {
-            this.ShowParsers = new HashSet<ShowParser>();
+            this.Parsers = new HashSet<Parser>();
         }
     
         public int ShowKey { get; set; }
@@ -31,6 +31,6 @@ namespace ShowManagerAzureWebRole
         public System.DateTime ModifiedDtm { get; set; }
     
         public virtual ApplicationInstance ApplicationInstance { get; set; }
-        public virtual ICollection<ShowParser> ShowParsers { get; set; }
+        public virtual ICollection<Parser> Parsers { get; set; }
     }
 }

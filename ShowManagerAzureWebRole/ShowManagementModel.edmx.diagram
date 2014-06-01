@@ -11,13 +11,10 @@
         <EntityTypeShape EntityType="ShowManagementDBModel.Parser" Width="1.5" PointX="3" PointY="4.5" IsExpanded="true" />
         <EntityTypeShape EntityType="ShowManagementDBModel.ParserType" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="ShowManagementDBModel.Show" Width="1.5" PointX="3" PointY="8.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="ShowManagementDBModel.ShowParser" Width="1.5" PointX="5.25" PointY="6.625" IsExpanded="true" />
         <AssociationConnector Association="ShowManagementDBModel.FK_Parser_ApplicationInstance1" ManuallyRouted="false" />
         <AssociationConnector Association="ShowManagementDBModel.FK_Show_ApplicationInstance" ManuallyRouted="false" />
-        <AssociationConnector Association="ShowManagementDBModel.FK_ShowParser_ApplicationInstance1" ManuallyRouted="false" />
         <AssociationConnector Association="ShowManagementDBModel.FK_Parser_ParserType1" ManuallyRouted="false" />
-        <AssociationConnector Association="ShowManagementDBModel.FK_ShowParser_Parser1" ManuallyRouted="false" />
-        <AssociationConnector Association="ShowManagementDBModel.FK_ShowParser_Show1" ManuallyRouted="false" />
+        <AssociationConnector Association="ShowManagementDBModel.FK_Parser_Show1" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

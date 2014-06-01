@@ -32,5 +32,7 @@ namespace ShowManager.Client.WPF.ShowManagement
         {
             this.OnPropertyChanging(() => this.Pattern);
         }
+
+
     }
 }

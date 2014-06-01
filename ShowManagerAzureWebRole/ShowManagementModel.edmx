@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="ShowManagementDBModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="ShowManagementDBModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityContainer Name="ShowManagementDBModelStoreContainer">
           <EntitySet Name="ApplicationInstance" EntityType="ShowManagementDBModel.Store.ApplicationInstance" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="EntityTypeMaster" EntityType="ShowManagementDBModel.Store.EntityTypeMaster" store:Type="Tables" Schema="dbo" />
@@ -12,7 +12,6 @@
           <EntitySet Name="Parser" EntityType="ShowManagementDBModel.Store.Parser" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="ParserType" EntityType="ShowManagementDBModel.Store.ParserType" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="Show" EntityType="ShowManagementDBModel.Store.Show" store:Type="Tables" Schema="dbo" />
-          <EntitySet Name="ShowParser" EntityType="ShowManagementDBModel.Store.ShowParser" store:Type="Tables" Schema="dbo" />
           <AssociationSet Name="FK_Parser_ApplicationInstance1" Association="ShowManagementDBModel.Store.FK_Parser_ApplicationInstance1">
             <End Role="ApplicationInstance" EntitySet="ApplicationInstance" />
             <End Role="Parser" EntitySet="Parser" />
@@ -21,21 +20,13 @@
             <End Role="ParserType" EntitySet="ParserType" />
             <End Role="Parser" EntitySet="Parser" />
           </AssociationSet>
+          <AssociationSet Name="FK_Parser_Show1" Association="ShowManagementDBModel.Store.FK_Parser_Show1">
+            <End Role="Show" EntitySet="Show" />
+            <End Role="Parser" EntitySet="Parser" />
+          </AssociationSet>
           <AssociationSet Name="FK_Show_ApplicationInstance" Association="ShowManagementDBModel.Store.FK_Show_ApplicationInstance">
             <End Role="ApplicationInstance" EntitySet="ApplicationInstance" />
             <End Role="Show" EntitySet="Show" />
-          </AssociationSet>
-          <AssociationSet Name="FK_ShowParser_ApplicationInstance1" Association="ShowManagementDBModel.Store.FK_ShowParser_ApplicationInstance1">
-            <End Role="ApplicationInstance" EntitySet="ApplicationInstance" />
-            <End Role="ShowParser" EntitySet="ShowParser" />
-          </AssociationSet>
-          <AssociationSet Name="FK_ShowParser_Parser1" Association="ShowManagementDBModel.Store.FK_ShowParser_Parser1">
-            <End Role="Parser" EntitySet="Parser" />
-            <End Role="ShowParser" EntitySet="ShowParser" />
-          </AssociationSet>
-          <AssociationSet Name="FK_ShowParser_Show1" Association="ShowManagementDBModel.Store.FK_ShowParser_Show1">
-            <End Role="Show" EntitySet="Show" />
-            <End Role="ShowParser" EntitySet="ShowParser" />
           </AssociationSet>
         </EntityContainer>
         <EntityType Name="ApplicationInstance">
@@ -93,6 +84,7 @@
           </Key>
           <Property Name="ParserKey" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="AppInstanceKey" Type="int" Nullable="false" />
+          <Property Name="ShowKey" Type="int" Nullable="false" />
           <Property Name="ParserTypeKey" Type="int" Nullable="false" />
           <Property Name="Pattern" Type="varchar" Nullable="false" MaxLength="50" />
           <Property Name="ExcludedCharacters" Type="nvarchar" Nullable="false" MaxLength="50" />
@@ -129,19 +121,6 @@
           <Property Name="ModifiedBy" Type="nvarchar" Nullable="false" MaxLength="100" />
           <Property Name="ModifiedDtm" Type="datetime2" Nullable="false" />
         </EntityType>
-        <EntityType Name="ShowParser">
-          <Key>
-            <PropertyRef Name="ShowParserKey" />
-          </Key>
-          <Property Name="ShowParserKey" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
-          <Property Name="AppInstanceKey" Type="int" Nullable="false" />
-          <Property Name="ShowKey" Type="int" Nullable="false" />
-          <Property Name="ParserKey" Type="int" Nullable="false" />
-          <Property Name="CreatedBy" Type="nvarchar" Nullable="false" MaxLength="100" />
-          <Property Name="CreatedDtm" Type="datetime2" Nullable="false" />
-          <Property Name="ModifiedBy" Type="nvarchar" Nullable="false" MaxLength="100" />
-          <Property Name="ModifiedDtm" Type="datetime2" Nullable="false" />
-        </EntityType>
         <Association Name="FK_Parser_ApplicationInstance1">
           <End Role="ApplicationInstance" Type="ShowManagementDBModel.Store.ApplicationInstance" Multiplicity="1" />
           <End Role="Parser" Type="ShowManagementDBModel.Store.Parser" Multiplicity="*" />
@@ -166,6 +145,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Parser_Show1">
+          <End Role="Show" Type="ShowManagementDBModel.Store.Show" Multiplicity="1" />
+          <End Role="Parser" Type="ShowManagementDBModel.Store.Parser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Show">
+              <PropertyRef Name="ShowKey" />
+            </Principal>
+            <Dependent Role="Parser">
+              <PropertyRef Name="ShowKey" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Show_ApplicationInstance">
           <End Role="ApplicationInstance" Type="ShowManagementDBModel.Store.ApplicationInstance" Multiplicity="1" />
           <End Role="Show" Type="ShowManagementDBModel.Store.Show" Multiplicity="*" />
@@ -178,44 +169,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_ShowParser_ApplicationInstance1">
-          <End Role="ApplicationInstance" Type="ShowManagementDBModel.Store.ApplicationInstance" Multiplicity="1" />
-          <End Role="ShowParser" Type="ShowManagementDBModel.Store.ShowParser" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="ApplicationInstance">
-              <PropertyRef Name="ApplicationInstanceKey" />
-            </Principal>
-            <Dependent Role="ShowParser">
-              <PropertyRef Name="AppInstanceKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_ShowParser_Parser1">
-          <End Role="Parser" Type="ShowManagementDBModel.Store.Parser" Multiplicity="1" />
-          <End Role="ShowParser" Type="ShowManagementDBModel.Store.ShowParser" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Parser">
-              <PropertyRef Name="ParserKey" />
-            </Principal>
-            <Dependent Role="ShowParser">
-              <PropertyRef Name="ParserKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_ShowParser_Show1">
-          <End Role="Show" Type="ShowManagementDBModel.Store.Show" Multiplicity="1" />
-          <End Role="ShowParser" Type="ShowManagementDBModel.Store.ShowParser" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Show">
-              <PropertyRef Name="ShowKey" />
-            </Principal>
-            <Dependent Role="ShowParser">
-              <PropertyRef Name="ShowKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="ShowManagementDBModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -226,7 +180,6 @@
           <EntitySet Name="Parsers" EntityType="ShowManagementDBModel.Parser" />
           <EntitySet Name="ParserTypes" EntityType="ShowManagementDBModel.ParserType" />
           <EntitySet Name="Shows" EntityType="ShowManagementDBModel.Show" />
-          <EntitySet Name="ShowParsers" EntityType="ShowManagementDBModel.ShowParser" />
           <AssociationSet Name="FK_Parser_ApplicationInstance1" Association="ShowManagementDBModel.FK_Parser_ApplicationInstance1">
             <End Role="ApplicationInstance" EntitySet="ApplicationInstances" />
             <End Role="Parser" EntitySet="Parsers" />
@@ -235,21 +188,13 @@
             <End Role="ApplicationInstance" EntitySet="ApplicationInstances" />
             <End Role="Show" EntitySet="Shows" />
           </AssociationSet>
-          <AssociationSet Name="FK_ShowParser_ApplicationInstance1" Association="ShowManagementDBModel.FK_ShowParser_ApplicationInstance1">
-            <End Role="ApplicationInstance" EntitySet="ApplicationInstances" />
-            <End Role="ShowParser" EntitySet="ShowParsers" />
-          </AssociationSet>
           <AssociationSet Name="FK_Parser_ParserType1" Association="ShowManagementDBModel.FK_Parser_ParserType1">
             <End Role="ParserType" EntitySet="ParserTypes" />
             <End Role="Parser" EntitySet="Parsers" />
           </AssociationSet>
-          <AssociationSet Name="FK_ShowParser_Parser1" Association="ShowManagementDBModel.FK_ShowParser_Parser1">
-            <End Role="Parser" EntitySet="Parsers" />
-            <End Role="ShowParser" EntitySet="ShowParsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_ShowParser_Show1" Association="ShowManagementDBModel.FK_ShowParser_Show1">
+          <AssociationSet Name="FK_Parser_Show1" Association="ShowManagementDBModel.FK_Parser_Show1">
             <End Role="Show" EntitySet="Shows" />
-            <End Role="ShowParser" EntitySet="ShowParsers" />
+            <End Role="Parser" EntitySet="Parsers" />
           </AssociationSet>
         </EntityContainer>
         <EntityType Name="ApplicationInstance">
@@ -265,7 +210,6 @@
           <Property Name="ModifiedDtm" Type="DateTime" Nullable="false" Precision="7" />
           <NavigationProperty Name="Parsers" Relationship="ShowManagementDBModel.FK_Parser_ApplicationInstance1" FromRole="ApplicationInstance" ToRole="Parser" />
           <NavigationProperty Name="Shows" Relationship="ShowManagementDBModel.FK_Show_ApplicationInstance" FromRole="ApplicationInstance" ToRole="Show" />
-          <NavigationProperty Name="ShowParsers" Relationship="ShowManagementDBModel.FK_ShowParser_ApplicationInstance1" FromRole="ApplicationInstance" ToRole="ShowParser" />
         </EntityType>
         <EntityType Name="EntityTypeMaster">
           <Key>
@@ -319,7 +263,8 @@
           <Property Name="ModifiedDtm" Type="DateTime" Nullable="false" Precision="7" />
           <NavigationProperty Name="ApplicationInstance" Relationship="ShowManagementDBModel.FK_Parser_ApplicationInstance1" FromRole="Parser" ToRole="ApplicationInstance" />
           <NavigationProperty Name="ParserType" Relationship="ShowManagementDBModel.FK_Parser_ParserType1" FromRole="Parser" ToRole="ParserType" />
-          <NavigationProperty Name="ShowParsers" Relationship="ShowManagementDBModel.FK_ShowParser_Parser1" FromRole="Parser" ToRole="ShowParser" />
+          <Property Type="Int32" Name="ShowKey" Nullable="false" />
+          <NavigationProperty Name="Show" Relationship="ShowManagementDBModel.FK_Parser_Show1" FromRole="Parser" ToRole="Show" />
         </EntityType>
         <EntityType Name="ParserType">
           <Key>
@@ -350,23 +295,7 @@
           <Property Name="ModifiedBy" Type="String" Nullable="false" MaxLength="100" Unicode="true" FixedLength="false" />
           <Property Name="ModifiedDtm" Type="DateTime" Nullable="false" Precision="7" />
           <NavigationProperty Name="ApplicationInstance" Relationship="ShowManagementDBModel.FK_Show_ApplicationInstance" FromRole="Show" ToRole="ApplicationInstance" />
-          <NavigationProperty Name="ShowParsers" Relationship="ShowManagementDBModel.FK_ShowParser_Show1" FromRole="Show" ToRole="ShowParser" />
-        </EntityType>
-        <EntityType Name="ShowParser">
-          <Key>
-            <PropertyRef Name="ShowParserKey" />
-          </Key>
-          <Property Name="ShowParserKey" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
-          <Property Name="AppInstanceKey" Type="Int32" Nullable="false" />
-          <Property Name="ShowKey" Type="Int32" Nullable="false" />
-          <Property Name="ParserKey" Type="Int32" Nullable="false" />
-          <Property Name="CreatedBy" Type="String" Nullable="false" MaxLength="100" Unicode="true" FixedLength="false" />
-          <Property Name="CreatedDtm" Type="DateTime" Nullable="false" Precision="7" />
-          <Property Name="ModifiedBy" Type="String" Nullable="false" MaxLength="100" Unicode="true" FixedLength="false" />
-          <Property Name="ModifiedDtm" Type="DateTime" Nullable="false" Precision="7" />
-          <NavigationProperty Name="ApplicationInstance" Relationship="ShowManagementDBModel.FK_ShowParser_ApplicationInstance1" FromRole="ShowParser" ToRole="ApplicationInstance" />
-          <NavigationProperty Name="Parser" Relationship="ShowManagementDBModel.FK_ShowParser_Parser1" FromRole="ShowParser" ToRole="Parser" />
-          <NavigationProperty Name="Show" Relationship="ShowManagementDBModel.FK_ShowParser_Show1" FromRole="ShowParser" ToRole="Show" />
+          <NavigationProperty Name="Parsers" Relationship="ShowManagementDBModel.FK_Parser_Show1" FromRole="Show" ToRole="Parser" />
         </EntityType>
         <Association Name="FK_Parser_ApplicationInstance1">
           <End Role="ApplicationInstance" Type="ShowManagementDBModel.ApplicationInstance" Multiplicity="1" />
@@ -392,18 +321,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_ShowParser_ApplicationInstance1">
-          <End Role="ApplicationInstance" Type="ShowManagementDBModel.ApplicationInstance" Multiplicity="1" />
-          <End Role="ShowParser" Type="ShowManagementDBModel.ShowParser" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="ApplicationInstance">
-              <PropertyRef Name="ApplicationInstanceKey" />
-            </Principal>
-            <Dependent Role="ShowParser">
-              <PropertyRef Name="AppInstanceKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_Parser_ParserType1">
           <End Role="ParserType" Type="ShowManagementDBModel.ParserType" Multiplicity="1" />
           <End Role="Parser" Type="ShowManagementDBModel.Parser" Multiplicity="*" />
@@ -416,26 +333,14 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_ShowParser_Parser1">
-          <End Role="Parser" Type="ShowManagementDBModel.Parser" Multiplicity="1" />
-          <End Role="ShowParser" Type="ShowManagementDBModel.ShowParser" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Parser">
-              <PropertyRef Name="ParserKey" />
-            </Principal>
-            <Dependent Role="ShowParser">
-              <PropertyRef Name="ParserKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_ShowParser_Show1">
-          <End Role="Show" Type="ShowManagementDBModel.Show" Multiplicity="1" />
-          <End Role="ShowParser" Type="ShowManagementDBModel.ShowParser" Multiplicity="*" />
+        <Association Name="FK_Parser_Show1">
+          <End Type="ShowManagementDBModel.Show" Role="Show" Multiplicity="1" />
+          <End Type="ShowManagementDBModel.Parser" Role="Parser" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Show">
               <PropertyRef Name="ShowKey" />
             </Principal>
-            <Dependent Role="ShowParser">
+            <Dependent Role="Parser">
               <PropertyRef Name="ShowKey" />
             </Dependent>
           </ReferentialConstraint>
@@ -501,6 +406,7 @@
           <EntitySetMapping Name="Parsers">
             <EntityTypeMapping TypeName="ShowManagementDBModel.Parser">
               <MappingFragment StoreEntitySet="Parser">
+                <ScalarProperty Name="ShowKey" ColumnName="ShowKey" />
                 <ScalarProperty Name="ParserKey" ColumnName="ParserKey" />
                 <ScalarProperty Name="AppInstanceKey" ColumnName="AppInstanceKey" />
                 <ScalarProperty Name="ParserTypeKey" ColumnName="ParserTypeKey" />
@@ -536,20 +442,6 @@
                 <ScalarProperty Name="ImdbId" ColumnName="ImdbId" />
                 <ScalarProperty Name="Title" ColumnName="Title" />
                 <ScalarProperty Name="Directory" ColumnName="Directory" />
-                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
-                <ScalarProperty Name="CreatedDtm" ColumnName="CreatedDtm" />
-                <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
-                <ScalarProperty Name="ModifiedDtm" ColumnName="ModifiedDtm" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="ShowParsers">
-            <EntityTypeMapping TypeName="ShowManagementDBModel.ShowParser">
-              <MappingFragment StoreEntitySet="ShowParser">
-                <ScalarProperty Name="ShowParserKey" ColumnName="ShowParserKey" />
-                <ScalarProperty Name="AppInstanceKey" ColumnName="AppInstanceKey" />
-                <ScalarProperty Name="ShowKey" ColumnName="ShowKey" />
-                <ScalarProperty Name="ParserKey" ColumnName="ParserKey" />
                 <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
                 <ScalarProperty Name="CreatedDtm" ColumnName="CreatedDtm" />
                 <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />

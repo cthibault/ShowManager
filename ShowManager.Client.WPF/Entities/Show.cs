@@ -41,9 +41,9 @@ namespace ShowManager.Client.WPF.ShowManagement
         {
             if (changeTracker != null)
             {
-                foreach (var showParser in this.ShowParsers)
+                foreach (var parser in this.Parsers)
                 {
-                    showParser.Track(changeTracker, track);
+                    parser.Track(changeTracker, track);
                 }
             }
         }

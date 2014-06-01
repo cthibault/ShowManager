@@ -18,15 +18,15 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <DataGrid DataContext="{Binding}" ItemsSource="{Binding Show.ShowParsers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserResizeRows="False">
+        <DataGrid DataContext="{Binding}" ItemsSource="{Binding Show.Parsers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserResizeRows="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Pattern" Binding="{Binding Parser.Pattern}" />
-                <DataGridTextColumn Header="Excluded Chars" Binding="{Binding Parser.ExcludedCharacters}" />
+                <DataGridTextColumn Header="Pattern" Binding="{Binding Pattern}" />
+                <DataGridTextColumn Header="Excluded Chars" Binding="{Binding ExcludedCharacters}" />
 
                 <DataGridComboBoxColumn Header="Type" 
                                         DisplayMemberPath="Name"
                                         SelectedValuePath="ParserTypeKey"
-                                        SelectedValueBinding="{Binding Parser.ParserTypeKey}"
+                                        SelectedValueBinding="{Binding ParserTypeKey}"
                                         ElementStyle="{StaticResource ParserTypeComboBoxStyle}"
                                         EditingElementStyle="{StaticResource ParserTypeComboBoxStyle}">
                     <!--
@@ -45,14 +45,18 @@
                                         </Rectangle.Fill>
                                     </Rectangle>
                                 </Button>
-                                <Button ToolTip="clone" Margin="2,0">
+                                <Button ToolTip="clone" Margin="2,0"
+                                        Command="{Binding DataContext.CloneParserCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                        CommandParameter="{Binding}">
                                     <Rectangle Width="15" Height="15">
                                         <Rectangle.Fill>
                                             <VisualBrush Stretch="Uniform" Visual="{DynamicResource appbar_clipboard}" />
                                         </Rectangle.Fill>
                                     </Rectangle>
                                 </Button>
-                                <Button ToolTip="delete" Margin="2,0">
+                                <Button ToolTip="delete" Margin="2,0"
+                                        Command="{Binding DataContext.DeleteParserCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                        CommandParameter="{Binding}">
                                     <Rectangle Width="15" Height="15">
                                         <Rectangle.Fill>
                                             <VisualBrush Stretch="Uniform" Visual="{DynamicResource appbar_delete}" />

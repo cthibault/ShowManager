@@ -71,7 +71,7 @@ namespace ShowManager.Client.WPF.Providers
             var tcs = new TaskCompletionSource<Show>();
 
             var query = this.Context.Shows
-                .Expand(s => s.ShowParsers)
+                .Expand(s => s.Parsers)
                 .Where(s => s.ShowKey == showKey) as DataServiceQuery<Show>;
 
             try
@@ -92,16 +92,6 @@ namespace ShowManager.Client.WPF.Providers
                 var query = result.AsyncState as DataServiceQuery<Show>;
 
                 var show = query.EndExecute(result).SingleOrDefault();
-
-                if (show != null && show.ShowParsers.Any())
-                {
-                    string propertyName = PropertyHelper.ExtractPropertyName(() => show.ShowParsers.First().Parser);
-
-                    foreach (var sp in show.ShowParsers)
-                    {
-                        this.Context.LoadProperty(sp, propertyName);
-                    }
-                }
 
                 tcs.TrySetResult(show);
             }

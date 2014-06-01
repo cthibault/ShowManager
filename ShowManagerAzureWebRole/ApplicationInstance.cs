@@ -18,7 +18,6 @@ namespace ShowManagerAzureWebRole
         {
             this.Parsers = new HashSet<Parser>();
             this.Shows = new HashSet<Show>();
-            this.ShowParsers = new HashSet<ShowParser>();
         }
     
         public int ApplicationInstanceKey { get; set; }
@@ -31,6 +30,5 @@ namespace ShowManagerAzureWebRole
     
         public virtual ICollection<Parser> Parsers { get; set; }
         public virtual ICollection<Show> Shows { get; set; }
-        public virtual ICollection<ShowParser> ShowParsers { get; set; }
     }
 }

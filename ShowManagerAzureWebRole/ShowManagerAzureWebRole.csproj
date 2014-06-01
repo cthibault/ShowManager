@@ -132,9 +132,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ShowManagementModel.edmx</DependentUpon>
     </Compile>
-    <Compile Include="ShowParser.cs">
-      <DependentUpon>ShowManagementModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="WebRole.cs" />
   </ItemGroup>
   <ItemGroup>

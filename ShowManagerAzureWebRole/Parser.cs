@@ -14,11 +14,6 @@ namespace ShowManagerAzureWebRole
     
     public partial class Parser
     {
-        public Parser()
-        {
-            this.ShowParsers = new HashSet<ShowParser>();
-        }
-    
         public int ParserKey { get; set; }
         public int AppInstanceKey { get; set; }
         public int ParserTypeKey { get; set; }
@@ -28,9 +23,10 @@ namespace ShowManagerAzureWebRole
         public System.DateTime CreatedDtm { get; set; }
         public string ModifiedBy { get; set; }
         public System.DateTime ModifiedDtm { get; set; }
+        public int ShowKey { get; set; }
     
         public virtual ApplicationInstance ApplicationInstance { get; set; }
         public virtual ParserType ParserType { get; set; }
-        public virtual ICollection<ShowParser> ShowParsers { get; set; }
+        public virtual Show Show { get; set; }
     }
 }

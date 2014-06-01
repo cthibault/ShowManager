@@ -300,6 +300,7 @@ namespace ShowManager.Client.WPF.ViewModels
                 this._editShowViewModel = this.UnityContainer.Resolve<IEditShowViewModel>(
                     new ParameterOverrides
                         {
+                            { "context", this.Context },
                             { "parserTypes", parserTypes }
                         });
 
